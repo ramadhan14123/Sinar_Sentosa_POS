@@ -14,9 +14,9 @@ import { catalogQuery } from "@/lib/queries";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Menu Hari Ini — RasaPOS" },
+      { title: "Menu Hari Ini — Sinar Sentosa" },
       { name: "description", content: "Pilih menu favorit, pesan, dan pantau statusnya langsung dari perangkat Anda." },
-      { property: "og:title", content: "Menu Hari Ini — RasaPOS" },
+      { property: "og:title", content: "Menu Hari Ini — Sinar Sentosa" },
       { property: "og:description", content: "Pilih menu favorit dan pesan dengan mudah." },
     ],
   }),

@@ -78,10 +78,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "RasaPOS — Pesan Menu dengan Mudah" },
+      { title: "Sinar Sentosa — Pesan Menu dengan Mudah" },
       { name: "description", content: "Sistem pemesanan, kasir, dan inventaris modern untuk restoran dan kafe." },
-      { name: "author", content: "RasaPOS" },
-      { property: "og:title", content: "RasaPOS" },
+      { name: "author", content: "Sinar Sentosa" },
+      { property: "og:title", content: "Sinar Sentosa" },
       { property: "og:description", content: "Pesan menu dan pantau status pesanan dengan mudah." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

@@ -65,17 +65,23 @@ export const confirmPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ orderId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.rpc("confirm_order_payment", { p_order_id: data.orderId });
+    const { error } = await context.supabase.rpc("confirm_order_payment", {
+      p_order_id: data.orderId,
+    });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
 
 export const changeOrderStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({
-    orderId: z.string().uuid(),
-    status: z.enum(["processing", "completed", "cancelled"]),
-  }).parse(input))
+  .inputValidator((input) =>
+    z
+      .object({
+        orderId: z.string().uuid(),
+        status: z.enum(["processing", "completed", "cancelled"]),
+      })
+      .parse(input),
+  )
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.rpc("update_order_status", {
       p_order_id: data.orderId,
@@ -87,11 +93,19 @@ export const changeOrderStatus = createServerFn({ method: "POST" })
 
 export const updateStock = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ productId: z.string().uuid(), stock: z.number().int().min(0).max(1_000_000) }).parse(input))
+  .inputValidator((input) =>
+    z
+      .object({ productId: z.string().uuid(), stock: z.number().int().min(0).max(1_000_000) })
+      .parse(input),
+  )
   .handler(async ({ data, context }) => {
     const { data: allowed } = await context.supabase.rpc("is_staff", { _user_id: context.userId });
     if (!allowed) throw new Error("Akses ditolak.");
-    const { error } = await context.supabase.from("products").update({ stock: data.stock }).eq("id", data.productId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("products")
+      .update({ stock: data.stock })
+      .eq("id", data.productId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -122,11 +136,21 @@ export const deleteProduct = createServerFn({ method: "POST" })
 
 export const saveCategory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ id: z.string().uuid().optional(), name: z.string().trim().min(1).max(60), sortOrder: z.number().int().min(0) }).parse(input))
+  .inputValidator((input) =>
+    z
+      .object({
+        id: z.string().uuid().optional(),
+        name: z.string().trim().min(1).max(60),
+        sortOrder: z.number().int().min(0),
+      })
+      .parse(input),
+  )
   .handler(async ({ data, context }) => {
     await assertRole(context, "owner");
     const values = { name: data.name, sort_order: data.sortOrder, created_by: context.userId };
-    const query = data.id ? context.supabase.from("categories").update(values).eq("id", data.id) : context.supabase.from("categories").insert(values);
+    const query = data.id
+      ? context.supabase.from("categories").update(values).eq("id", data.id)
+      : context.supabase.from("categories").insert(values);
     const { error } = await query;
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -139,16 +163,18 @@ export const getAnalytics = createServerFn({ method: "GET" })
     await assertRole(context, "owner");
     const now = new Date();
     const jakartaNow = getJakartaDateParts(now);
-    const start = data.period === "day"
-      ? jakartaWallTimeToUtc(jakartaNow.year, jakartaNow.month, jakartaNow.date)
-      : data.period === "month"
-        ? jakartaWallTimeToUtc(jakartaNow.year, jakartaNow.month, 1)
-        : jakartaWallTimeToUtc(jakartaNow.year, 0, 1);
-    const end = data.period === "day"
-      ? jakartaWallTimeToUtc(jakartaNow.year, jakartaNow.month, jakartaNow.date + 1)
-      : data.period === "month"
-        ? jakartaWallTimeToUtc(jakartaNow.year, jakartaNow.month + 1, 1)
-        : jakartaWallTimeToUtc(jakartaNow.year + 1, 0, 1);
+    const start =
+      data.period === "day"
+        ? jakartaWallTimeToUtc(jakartaNow.year, jakartaNow.month, jakartaNow.date)
+        : data.period === "month"
+          ? jakartaWallTimeToUtc(jakartaNow.year, jakartaNow.month, 1)
+          : jakartaWallTimeToUtc(jakartaNow.year, 0, 1);
+    const end =
+      data.period === "day"
+        ? jakartaWallTimeToUtc(jakartaNow.year, jakartaNow.month, jakartaNow.date + 1)
+        : data.period === "month"
+          ? jakartaWallTimeToUtc(jakartaNow.year, jakartaNow.month + 1, 1)
+          : jakartaWallTimeToUtc(jakartaNow.year + 1, 0, 1);
     const { data: rows, error } = await context.supabase
       .from("orders")
       .select("total_idr, created_at, order_items(product_name_snapshot, quantity)")
@@ -163,14 +189,27 @@ export const getAnalytics = createServerFn({ method: "GET" })
     const avgOrder = orderCount ? Math.round(revenue / orderCount) : 0;
     const productMap = new Map<string, number>();
     let itemsSold = 0;
-    orders.forEach((o) => (Array.isArray(o.order_items) ? o.order_items : []).forEach((i: any) => {
-      productMap.set(i.product_name_snapshot, (productMap.get(i.product_name_snapshot) ?? 0) + i.quantity);
-      itemsSold += i.quantity;
-    }));
-    const topProducts = [...productMap].map(([name, quantity]) => ({ name, quantity })).sort((a, b) => b.quantity - a.quantity).slice(0, 5);
+    orders.forEach((o) =>
+      (Array.isArray(o.order_items) ? o.order_items : []).forEach((i: any) => {
+        productMap.set(
+          i.product_name_snapshot,
+          (productMap.get(i.product_name_snapshot) ?? 0) + i.quantity,
+        );
+        itemsSold += i.quantity;
+      }),
+    );
+    const topProducts = [...productMap]
+      .map(([name, quantity]) => ({ name, quantity }))
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 5);
     let series: { bucket: string; label: string; revenue: number; orders: number }[] = [];
     if (data.period === "day") {
-      series = Array.from({ length: 24 }, (_, h) => ({ bucket: String(h), label: `${String(h).padStart(2, "0")}:00`, revenue: 0, orders: 0 }));
+      series = Array.from({ length: 24 }, (_, h) => ({
+        bucket: String(h),
+        label: `${String(h).padStart(2, "0")}:00`,
+        revenue: 0,
+        orders: 0,
+      }));
       orders.forEach((o) => {
         const h = getJakartaDateParts(new Date(o.created_at)).hour;
         series[h].revenue += o.total_idr ?? 0;
@@ -178,7 +217,12 @@ export const getAnalytics = createServerFn({ method: "GET" })
       });
     } else if (data.period === "month") {
       const days = new Date(Date.UTC(jakartaNow.year, jakartaNow.month + 1, 0)).getUTCDate();
-      series = Array.from({ length: days }, (_, d) => ({ bucket: String(d + 1), label: String(d + 1), revenue: 0, orders: 0 }));
+      series = Array.from({ length: days }, (_, d) => ({
+        bucket: String(d + 1),
+        label: String(d + 1),
+        revenue: 0,
+        orders: 0,
+      }));
       orders.forEach((o) => {
         const d = getJakartaDateParts(new Date(o.created_at)).date - 1;
         if (series[d]) {
@@ -187,7 +231,20 @@ export const getAnalytics = createServerFn({ method: "GET" })
         }
       });
     } else {
-      const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+      const months = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "Mei",
+        "Jun",
+        "Jul",
+        "Agu",
+        "Sep",
+        "Okt",
+        "Nov",
+        "Des",
+      ];
       series = months.map((label, i) => ({ bucket: String(i), label, revenue: 0, orders: 0 }));
       orders.forEach((o) => {
         const m = getJakartaDateParts(new Date(o.created_at)).month;
@@ -200,15 +257,32 @@ export const getAnalytics = createServerFn({ method: "GET" })
 
 export const createCashier = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ fullName: z.string().trim().min(2).max(100), email: z.string().email().max(255), password: z.string().min(8).max(72) }).parse(input))
+  .inputValidator((input) =>
+    z
+      .object({
+        fullName: z.string().trim().min(2).max(100),
+        email: z.string().email().max(255),
+        password: z.string().min(8).max(72),
+      })
+      .parse(input),
+  )
   .handler(async ({ data, context }) => {
     await assertRole(context, "owner");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({ email: data.email, password: data.password, email_confirm: true });
+    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      email_confirm: true,
+    });
     if (error || !created.user) throw new Error(error?.message ?? "Gagal membuat akun.");
-    const { error: profileError } = await supabaseAdmin.from("profiles").insert({ id: created.user.id, full_name: data.fullName });
-    const { error: roleError } = await supabaseAdmin.from("user_roles").insert({ user_id: created.user.id, role: "cashier" });
-    if (profileError || roleError) throw new Error(profileError?.message ?? roleError?.message ?? "Gagal menyimpan profil.");
+    const { error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .insert({ id: created.user.id, full_name: data.fullName });
+    const { error: roleError } = await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: created.user.id, role: "cashier" });
+    if (profileError || roleError)
+      throw new Error(profileError?.message ?? roleError?.message ?? "Gagal menyimpan profil.");
     return { ok: true };
   });
 
@@ -218,11 +292,40 @@ export const deleteCashier = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertRole(context, "owner");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error: roleError } = await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
+    const { error: roleError } = await supabaseAdmin
+      .from("user_roles")
+      .delete()
+      .eq("user_id", data.userId);
     if (roleError) throw new Error(roleError.message);
-    const { error: profileError } = await supabaseAdmin.from("profiles").delete().eq("id", data.userId);
+    const { error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .delete()
+      .eq("id", data.userId);
     if (profileError) throw new Error(profileError.message);
     const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
     if (authError) throw new Error(authError.message);
     return { ok: true };
+  });
+
+export const getStaffWithEmail = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertRole(context, "owner");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: roles, error: roleError } = await supabaseAdmin
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "cashier");
+    if (roleError) throw new Error(roleError.message);
+    const ids = roles.map((r) => r.user_id);
+    if (!ids.length) return [];
+    const { data: profiles, error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .select("*")
+      .in("id", ids);
+    if (profileError) throw new Error(profileError.message);
+    const { data: authUsers, error: authError } = await supabaseAdmin.auth.admin.listUsers();
+    if (authError) throw new Error(authError.message);
+    const emailMap = new Map(authUsers.users.map((u) => [u.id, u.email]));
+    return (profiles ?? []).map((p) => ({ ...p, email: emailMap.get(p.id) ?? "-" }));
   });

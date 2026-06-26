@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDateTime, formatIDR } from "@/lib/format";
 
-export const Route = createFileRoute("/order/$code")({ component: OrderPage, head: ({ params }) => ({ meta: [{ title: `Pesanan ${params.code} — RasaPOS` }, { name: "description", content: "Pantau status pesanan dan unduh struk pembayaran." }] }) });
+export const Route = createFileRoute("/order/$code")({ component: OrderPage, head: ({ params }) => ({ meta: [{ title: `Pesanan ${params.code} — Sinar Sentosa` }, { name: "description", content: "Pantau status pesanan dan unduh struk pembayaran." }] }) });
 type OrderData = { id: string; order_code: string; customer_name: string; status: string; total_idr: number; created_at: string; items: { name: string; price: number; quantity: number; subtotal: number }[] };
 const steps = ["pending_payment", "confirmed", "processing", "completed"];
 
@@ -76,7 +76,7 @@ function OrderPage() {
     };
 
     // Header
-    center("RASAPOS", 16, bold);
+    center("Sinar Sentosa", 16, bold);
     center("Struk Pembayaran", 8, font, muted);
     y -= 4;
     hr();
