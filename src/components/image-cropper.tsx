@@ -55,7 +55,7 @@ export function ImageCropper({ source, open, onOpenChange, onComplete }: { sourc
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-sm sm:max-w-md lg:max-w-lg">
         <DialogHeader>
           <DialogTitle>Potong gambar produk</DialogTitle>
           <DialogDescription>Rasio dikunci 1:1 agar seluruh foto menu terlihat konsisten.</DialogDescription>

@@ -8,7 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-
+import faviconurl from "../assets/sinarsentosa.svg?url"; 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
@@ -95,6 +95,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "icon", href: faviconurl, type: "image/svg+xml" },
+      { rel: "apple-touch-icon", href: faviconurl, sizes: "180x180" },
     ],
   }),
   shellComponent: RootShell,
