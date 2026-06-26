@@ -1,0 +1,13 @@
+CREATE POLICY "Anyone can read product images" ON storage.objects FOR SELECT TO anon, authenticated USING (bucket_id = 'product-images');
+CREATE POLICY "Owners upload product images" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'product-images' AND public.has_role(auth.uid(), 'owner'));
+CREATE POLICY "Owners update product images" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'product-images' AND public.has_role(auth.uid(), 'owner')) WITH CHECK (bucket_id = 'product-images' AND public.has_role(auth.uid(), 'owner'));
+CREATE POLICY "Owners delete product images" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'product-images' AND public.has_role(auth.uid(), 'owner'));
+REVOKE EXECUTE ON FUNCTION public.set_updated_at() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.is_staff(uuid) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.confirm_order_payment(uuid) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.update_order_status(uuid, public.order_status) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.create_order(text, jsonb) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.get_order_by_code(text, uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role), public.is_staff(uuid), public.confirm_order_payment(uuid), public.update_order_status(uuid, public.order_status) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.create_order(text, jsonb), public.get_order_by_code(text, uuid) TO anon, authenticated;
