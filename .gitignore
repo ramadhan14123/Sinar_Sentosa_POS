@@ -31,5 +31,8 @@ dist-ssr
 *.sln
 *.sw?
 .opencode
+.vscode
 .env
 .vercel
+android/
+docs/
