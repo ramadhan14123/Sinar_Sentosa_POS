@@ -114,11 +114,20 @@ function CashierPosPage() {
         throw new Error(error?.message ?? "Pesanan gagal dibuat.");
       const orderId = String((result as Record<string, unknown>).order_id);
       await confirm({ data: { orderId } });
-      const [orderData, storeData] = await Promise.all([
+
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id;
+
+      const [orderData, storeData, profileResult] = await Promise.all([
         getOrderById({ data: { orderId } }),
         getStoreSettings(),
+        userId
+          ? supabase.from("profiles").select("full_name").eq("id", userId).single()
+          : Promise.resolve({ data: null }),
       ]);
-      const printResult = await printReceipt(orderData as Record<string, any>, storeData as StoreSettings);
+      const cashierName = profileResult?.data?.full_name ?? "Kasir";
+
+      const printResult = await printReceipt(orderData as Record<string, any>, storeData as StoreSettings, cashierName);
       if (printResult === "thermal") {
         toast.success("Struk sedang dicetak.");
       } else if (printResult === "pdf") {

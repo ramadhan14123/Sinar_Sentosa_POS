@@ -33,6 +33,7 @@ export interface StoreSettings {
 export interface ReceiptData {
   orderCode: string;
   customerName: string;
+  cashierName: string;
   totalIdr: number;
   createdAt: string;
   items: { name: string; price: number; quantity: number; subtotal: number }[];

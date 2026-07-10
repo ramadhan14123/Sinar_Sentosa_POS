@@ -15,6 +15,7 @@ function mapOrder(raw: Record<string, any>): OrderReceipt {
   return {
     order_code: raw.order_code ?? "",
     customer_name: raw.customer_name ?? "",
+    cashier_name: "",
     total_idr: raw.total_idr ?? 0,
     created_at: raw.created_at ?? "",
     items,
@@ -25,8 +26,9 @@ export async function printReceipt(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rawOrder: Record<string, any>,
   store: StoreSettings,
+  cashierName: string,
 ): Promise<"thermal" | "pdf" | "none"> {
-  const order = mapOrder(rawOrder);
+  const order: OrderReceipt = { ...mapOrder(rawOrder), cashier_name: cashierName };
   const config = loadPrinterConfig();
 
   await debugLog(

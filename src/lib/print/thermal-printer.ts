@@ -225,6 +225,7 @@ function buildThermalReceipt(enc: EscPosEncoder, receipt: ReceiptData): EscPosEn
   enc.bold(true).text("No. ").bold(false).textLine(receipt.orderCode);
   enc.textLine(`Pelanggan: ${receipt.customerName}`);
   enc.textLine(`Tanggal: ${new Date(receipt.createdAt).toLocaleString("id-ID")}`);
+  if (receipt.cashierName) enc.textLine(`Kasir: ${receipt.cashierName}`);
   enc.hr();
 
   enc.bold(true).align("center").textLine("--- PESANAN ---").align("left").bold(false);

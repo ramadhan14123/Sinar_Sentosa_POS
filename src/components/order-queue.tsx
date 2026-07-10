@@ -26,6 +26,7 @@ import {
 } from "@/lib/pos.functions";
 import { getStoreSettings } from "@/lib/settings.functions";
 import { printReceipt } from "@/lib/print";
+import { supabase } from "@/integrations/supabase/client";
 import type { StoreSettings } from "@/lib/print/types";
 import { formatDateTime, formatIDR } from "@/lib/format";
 
@@ -108,11 +109,19 @@ export function OrderQueue() {
     try {
       if (o.status === "pending_payment") {
         await confirm({ data: { orderId: o.id } });
-        const [orderData, storeData] = await Promise.all([
+        const { data: userData } = await supabase.auth.getUser();
+        const userId = userData?.user?.id;
+
+        const [orderData, storeData, profileResult] = await Promise.all([
           getOrderById({ data: { orderId: o.id } }),
           getStoreSettings(),
+          userId
+            ? supabase.from("profiles").select("full_name").eq("id", userId).single()
+            : Promise.resolve({ data: null }),
         ]);
-        const printResult = await printReceipt(orderData as Record<string, any>, storeData as StoreSettings);
+        const cashierName = profileResult?.data?.full_name ?? "Kasir";
+
+        const printResult = await printReceipt(orderData as Record<string, any>, storeData as StoreSettings, cashierName);
         if (printResult === "thermal") toast.success("Struk sedang dicetak.");
         else if (printResult === "pdf")
           toast.info("Printer tidak tersedia. Pelanggan dapat mengunduh struk.");
