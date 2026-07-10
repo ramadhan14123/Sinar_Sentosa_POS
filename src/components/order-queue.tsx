@@ -26,6 +26,7 @@ import {
 } from "@/lib/pos.functions";
 import { getStoreSettings } from "@/lib/settings.functions";
 import { printReceipt } from "@/lib/print";
+import type { StoreSettings } from "@/lib/print/types";
 import { formatDateTime, formatIDR } from "@/lib/format";
 
 type StatusKey = "pending_payment" | "confirmed" | "processing";
@@ -111,7 +112,7 @@ export function OrderQueue() {
           getOrderById({ data: { orderId: o.id } }),
           getStoreSettings(),
         ]);
-        const printResult = await printReceipt(orderData, storeData);
+        const printResult = await printReceipt(orderData as Record<string, any>, storeData as StoreSettings);
         if (printResult === "thermal") toast.success("Struk sedang dicetak.");
         else if (printResult === "pdf")
           toast.info("Printer tidak tersedia. Pelanggan dapat mengunduh struk.");

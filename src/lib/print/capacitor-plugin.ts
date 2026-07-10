@@ -57,6 +57,10 @@ export interface ThermalPrinterPluginDef {
   getConnectionStatus(): Promise<ConnectionStatus>;
   getWifiInfo(): Promise<WifiNetworkInfo>;
   testPrint(): Promise<{ success: boolean }>;
+  openWifiSettings(): Promise<void>;
+  openBluetoothSettings(): Promise<void>;
+  openAppSettings(): Promise<void>;
+  log(options: { message: string }): Promise<void>;
 }
 
 // Get native plugin (or mock for web)
@@ -161,6 +165,22 @@ function createMockPlugin(): ThermalPrinterPluginDef {
       console.log("[Mock] Test print sent to printer");
       await new Promise((r) => setTimeout(r, 1000));
       return { success: true };
+    },
+
+    async openWifiSettings() {
+      console.log("[Mock] Opening WiFi settings");
+    },
+
+    async openBluetoothSettings() {
+      console.log("[Mock] Opening Bluetooth settings");
+    },
+
+    async openAppSettings() {
+      console.log("[Mock] Opening app settings");
+    },
+
+    async log(options: { message: string }) {
+      console.log("[Mock Log]", options.message);
     },
   };
 }

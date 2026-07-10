@@ -350,5 +350,5 @@ export const getOrderById = createServerFn({ method: "GET" })
       .eq("id", data.orderId)
       .single();
     if (error || !order) throw new Error("Pesanan tidak ditemukan.");
-    return order as Record<string, unknown>;
+    return order as Record<string, any>;
   });

@@ -34,6 +34,9 @@ import {
   testPrintThermal,
   getWifiInfo,
   disconnect,
+  openWifiSettings,
+  openBluetoothSettings,
+  openAppSettings,
 } from "@/lib/print/thermal-printer";
 import type { ConnectionType, PrinterConfig, StoreSettings } from "@/lib/print/types";
 import type { BluetoothDevice, UsbDeviceInfo, WifiNetworkInfo } from "@/lib/print/capacitor-plugin";
@@ -84,6 +87,11 @@ function PrinterSettingsPage() {
 
   const [connecting, setConnecting] = useState(false);
 
+  // Permission & service state
+  const [bluetoothOff, setBluetoothOff] = useState(false);
+  const [bluetoothPermissionDenied, setBluetoothPermissionDenied] = useState(false);
+  const [wifiUnavailable, setWifiUnavailable] = useState(false);
+
   if (storeQuery.data && !storeLoaded) {
     setStore(storeQuery.data as Partial<StoreSettings>);
     setStoreLoaded(true);
@@ -95,7 +103,13 @@ function PrinterSettingsPage() {
       setConnectionStatus(s.status);
       setConnectionType(s.type);
     });
-    getWifiInfo().then(setWifiInfo);
+    getWifiInfo()
+      .then((info) => {
+        setWifiInfo(info);
+        if (!info || !info.ssid) setWifiUnavailable(true);
+        else setWifiUnavailable(false);
+      })
+      .catch(() => setWifiUnavailable(true));
   }, []);
 
   function updatePrinter<K extends keyof PrinterConfig>(key: K, value: PrinterConfig[K]) {
@@ -123,11 +137,20 @@ function PrinterSettingsPage() {
   async function handleScanBluetooth() {
     setScanning(true);
     setBluetoothDevices([]);
+    setBluetoothOff(false);
+    setBluetoothPermissionDenied(false);
     try {
       const devices = await scanBluetoothDevices();
       setBluetoothDevices(devices);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Gagal memindai Bluetooth.");
+      const msg = e instanceof Error ? e.message : "";
+      if (msg.includes("Bluetooth is not enabled")) {
+        setBluetoothOff(true);
+      } else if (msg.includes("permission")) {
+        setBluetoothPermissionDenied(true);
+      } else {
+        toast.error(msg || "Gagal memindai Bluetooth.");
+      }
     } finally {
       setScanning(false);
     }
@@ -138,8 +161,11 @@ function PrinterSettingsPage() {
     setConnecting(true);
     setConnectionStatus("connecting");
     try {
-      updatePrinter("bluetoothAddress", device.address);
-      updatePrinter("printerName", device.name);
+      setPrinter((prev) => {
+        const next = { ...prev, bluetoothAddress: device.address, printerName: device.name };
+        savePrinterConfig(next);
+        return next;
+      });
       const ok = await connectBluetooth(device.address);
       if (ok) {
         setConnectionStatus("connected");
@@ -259,7 +285,7 @@ function PrinterSettingsPage() {
 
   const userRole = role.data?.role === "owner" ? "owner" : "cashier";
 
-  const statusIcon =
+  const StatusIcon =
     connectionStatus === "connected"
       ? CheckCircle2
       : connectionStatus === "connecting"
@@ -287,7 +313,7 @@ function PrinterSettingsPage() {
             <Printer className="size-5" /> Status Printer
           </h2>
           <div className="mt-4 flex items-center gap-4 rounded-2xl bg-muted/50 p-4">
-            <statusIcon
+            <StatusIcon
               className={`size-10 ${connectionStatus === "connecting" ? "animate-spin" : ""} ${statusColor}`}
             />
             <div className="flex-1">
@@ -371,6 +397,35 @@ function PrinterSettingsPage() {
                   )}
                   {scanning ? "Memindai..." : "Cari Printer Bluetooth"}
                 </Button>
+
+                {bluetoothOff && (
+                  <div className="rounded-xl border border-orange-200 bg-orange-50 p-4 text-center">
+                    <p className="text-sm font-bold text-orange-700">Bluetooth tidak aktif</p>
+                    <p className="mt-1 text-xs text-orange-600">
+                      Aktifkan Bluetooth untuk mencari printer thermal.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={openBluetoothSettings}
+                      className="mt-2"
+                    >
+                      Buka Pengaturan Bluetooth
+                    </Button>
+                  </div>
+                )}
+
+                {bluetoothPermissionDenied && (
+                  <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-center">
+                    <p className="text-sm font-bold text-red-700">Izin Bluetooth ditolak</p>
+                    <p className="mt-1 text-xs text-red-600">
+                      Berikan izin Bluetooth dan lokasi di pengaturan aplikasi.
+                    </p>
+                    <Button variant="outline" size="sm" onClick={openAppSettings} className="mt-2">
+                      Buka Pengaturan Aplikasi
+                    </Button>
+                  </div>
+                )}
 
                 {bluetoothDevices.length > 0 && (
                   <div className="rounded-xl border">
@@ -518,7 +573,7 @@ function PrinterSettingsPage() {
                   Pastikan printer dan tablet berada pada jaringan WiFi yang sama.
                 </p>
 
-                {wifiInfo && (
+                {wifiInfo && !wifiUnavailable && (
                   <div className="rounded-xl border bg-muted/30 p-3">
                     <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                       Jaringan Saat Ini
@@ -528,6 +583,19 @@ function PrinterSettingsPage() {
                       <span className="text-sm font-bold">{wifiInfo.ssid}</span>
                       <span className="text-xs text-muted-foreground">({wifiInfo.ipAddress})</span>
                     </div>
+                  </div>
+                )}
+
+                {wifiUnavailable && (
+                  <div className="rounded-xl border border-orange-200 bg-orange-50 p-4 text-center">
+                    <p className="text-sm font-bold text-orange-700">WiFi tidak terdeteksi</p>
+                    <p className="mt-1 text-xs text-orange-600">
+                      Aktifkan dan hubungkan ke jaringan WiFi terlebih dahulu untuk menggunakan
+                      koneksi Ethernet ke printer.
+                    </p>
+                    <Button variant="outline" size="sm" onClick={openWifiSettings} className="mt-2">
+                      Buka Pengaturan WiFi
+                    </Button>
                   </div>
                 )}
 

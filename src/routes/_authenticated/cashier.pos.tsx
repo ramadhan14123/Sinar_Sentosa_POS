@@ -22,6 +22,7 @@ import { confirmPayment, getOrderById } from "@/lib/pos.functions";
 import { getStoreSettings } from "@/lib/settings.functions";
 import { catalogQuery } from "@/lib/queries";
 import { printReceipt } from "@/lib/print";
+import type { StoreSettings } from "@/lib/print/types";
 
 export const Route = createFileRoute("/_authenticated/cashier/pos")({
   loader: ({ context }) => context.queryClient.ensureQueryData(catalogQuery),
@@ -117,7 +118,7 @@ function CashierPosPage() {
         getOrderById({ data: { orderId } }),
         getStoreSettings(),
       ]);
-      const printResult = await printReceipt(orderData, storeData);
+      const printResult = await printReceipt(orderData as Record<string, any>, storeData as StoreSettings);
       if (printResult === "thermal") {
         toast.success("Struk sedang dicetak.");
       } else if (printResult === "pdf") {

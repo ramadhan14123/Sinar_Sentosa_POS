@@ -7,7 +7,7 @@ export const getStoreSettings = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase.rpc("get_store_settings");
     if (error) throw new Error("Gagal memuat pengaturan toko.");
-    return data as Record<string, unknown>;
+    return data as Record<string, any>;
   });
 
 const settingsSchema = z.object({

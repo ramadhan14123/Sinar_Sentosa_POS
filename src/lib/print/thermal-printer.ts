@@ -11,6 +11,14 @@ const plugin = getThermalPrinterPlugin();
 
 let cachedStatus: ConnectionStatus = { status: "disconnected", type: "none" };
 
+export async function debugLog(message: string) {
+  try {
+    await plugin.log({ message });
+  } catch {
+    // fallback: silent
+  }
+}
+
 export async function requestBluetoothPermissions(): Promise<boolean> {
   try {
     const result = await plugin.requestBluetoothPermissions();
@@ -23,7 +31,6 @@ export async function requestBluetoothPermissions(): Promise<boolean> {
 
 export async function scanBluetoothDevices(): Promise<BluetoothDevice[]> {
   try {
-    // Request permissions first
     await requestBluetoothPermissions();
     const result = await plugin.scanBluetoothDevices();
     return result.devices;
@@ -89,11 +96,14 @@ export async function connectEthernet(ip: string, port: number): Promise<boolean
 }
 
 export async function sendEscPosData(data: Uint8Array): Promise<boolean> {
+  await debugLog(`[Thermal] sendEscPosData: payloadSize=${data.length} bytes`);
   try {
     const hex = Array.from(data)
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
+    await debugLog(`[Thermal] sendEscPosData: hex.length=${hex.length} calling plugin.sendData`);
     const result = await plugin.sendData({ data: hex });
+    await debugLog(`[Thermal] sendEscPosData: plugin result.success=${result.success}`);
     return result.success;
   } catch (e) {
     console.error("[ThermalPrinter] Send data failed", e);
@@ -122,8 +132,12 @@ export async function getConnectionStatus(): Promise<ConnectionStatus> {
 
 export async function getWifiInfo(): Promise<WifiNetworkInfo | null> {
   try {
-    return await plugin.getWifiInfo();
-  } catch {
+    await debugLog("[Thermal] getWifiInfo called");
+    const info = await plugin.getWifiInfo();
+    await debugLog(`[Thermal] getWifiInfo result: ${JSON.stringify(info)}`);
+    return info;
+  } catch (e) {
+    await debugLog(`[Thermal] getWifiInfo error: ${e}`);
     return null;
   }
 }
@@ -138,25 +152,60 @@ export async function testPrintThermal(): Promise<boolean> {
   }
 }
 
-// Legacy: for use with print-manager (thermal print attempt)
+export async function openWifiSettings(): Promise<void> {
+  try {
+    await plugin.openWifiSettings();
+  } catch (e) {
+    console.error("[ThermalPrinter] Open WiFi settings failed", e);
+  }
+}
+
+export async function openBluetoothSettings(): Promise<void> {
+  try {
+    await plugin.openBluetoothSettings();
+  } catch (e) {
+    console.error("[ThermalPrinter] Open Bluetooth settings failed", e);
+  }
+}
+
+export async function openAppSettings(): Promise<void> {
+  try {
+    await plugin.openAppSettings();
+  } catch (e) {
+    console.error("[ThermalPrinter] Open app settings failed", e);
+  }
+}
+
 export async function printReceiptThermal(
   config: PrinterConfig,
   receipt: ReceiptData,
 ): Promise<boolean> {
   try {
-    // Build ESC/POS data from receipt
+    await debugLog("[Thermal] printReceiptThermal: building ESC/POS data");
     const encoder = new EscPosEncoder();
     const data = buildThermalReceipt(encoder, receipt).build();
-    return await sendEscPosData(data);
-  } catch {
+    await debugLog(`[Thermal] printReceiptThermal: ESC/POS data built (${data.length} bytes), sending...`);
+    const ok = await sendEscPosData(data);
+    await debugLog(`[Thermal] printReceiptThermal: sendEscPosData returned ${ok}`);
+    return ok;
+  } catch (e) {
+    console.error("[ThermalPrinter] printReceiptThermal exception", e);
     return false;
   }
 }
 
-// Legacy: connection test for print-manager
 export async function testConnection(config: PrinterConfig): Promise<boolean> {
   const status = await getConnectionStatus();
-  return status.status === "connected";
+  if (status.status === "connected") return true;
+
+  if (config.bluetoothAddress) {
+    return await connectBluetooth(config.bluetoothAddress);
+  }
+  if (config.ipAddress) {
+    return await connectEthernet(config.ipAddress, config.port);
+  }
+
+  return false;
 }
 
 function buildThermalReceipt(enc: EscPosEncoder, receipt: ReceiptData): EscPosEncoder {

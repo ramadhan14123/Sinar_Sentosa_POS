@@ -1,5 +1,5 @@
 import { loadPrinterConfig } from "./printer-store";
-import { printReceiptThermal, testConnection } from "./thermal-printer";
+import { printReceiptThermal, debugLog } from "./thermal-printer";
 import { buildReceiptData, type OrderReceipt } from "./receipt-builder";
 import type { ReceiptData, StoreSettings } from "./types";
 
@@ -29,15 +29,25 @@ export async function printReceipt(
   const order = mapOrder(rawOrder);
   const config = loadPrinterConfig();
 
+  await debugLog(
+    `[PRINT] Config: autoPrint=${config.autoPrint} btAddr=${config.bluetoothAddress || "(empty)"} ip=${config.ipAddress || "(empty)"} port=${config.port} printer=${config.printerName || "(empty)"}`,
+  );
+
   if (config.autoPrint && (config.bluetoothAddress || config.ipAddress)) {
-    const connected = await testConnection(config);
-    if (connected) {
-      const receipt: ReceiptData = buildReceiptData(order, store);
-      const ok = await printReceiptThermal(config, receipt);
-      if (ok) return "thermal";
+    await debugLog("[PRINT] Thermal Branch Entered");
+    const receipt: ReceiptData = buildReceiptData(order, store);
+    const ok = await printReceiptThermal(config, receipt);
+    await debugLog(`[PRINT] printReceiptThermal result: ${ok}`);
+    if (ok) {
+      await debugLog("[PRINT] Thermal Success");
+      return "thermal";
     }
-    console.log("[PrintManager] Thermal unavailable — falling back to PDF");
+  } else {
+    await debugLog(
+      `[PRINT] Thermal condition not met: autoPrint=${config.autoPrint} btAddr=${config.bluetoothAddress || "(empty)"} ip=${config.ipAddress || "(empty)"}`,
+    );
   }
 
+  await debugLog("[PRINT] Fallback To PDF");
   return "pdf";
 }
