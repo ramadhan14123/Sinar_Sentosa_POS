@@ -172,6 +172,60 @@ export type Database = {
           },
         ]
       }
+      store_settings: {
+        Row: {
+          business_address: string
+          business_name: string
+          business_phone: string
+          created_at: string
+          footer_message: string
+          id: string
+          instagram: string
+          show_instagram: boolean
+          show_whatsapp: boolean
+          show_wifi: boolean
+          updated_at: string
+          website: string
+          whatsapp: string
+          wifi_password: string
+          wifi_ssid: string
+        }
+        Insert: {
+          business_address?: string
+          business_name?: string
+          business_phone?: string
+          created_at?: string
+          footer_message?: string
+          id?: string
+          instagram?: string
+          show_instagram?: boolean
+          show_whatsapp?: boolean
+          show_wifi?: boolean
+          updated_at?: string
+          website?: string
+          whatsapp?: string
+          wifi_password?: string
+          wifi_ssid?: string
+        }
+        Update: {
+          business_address?: string
+          business_name?: string
+          business_phone?: string
+          created_at?: string
+          footer_message?: string
+          id?: string
+          instagram?: string
+          show_instagram?: boolean
+          show_whatsapp?: boolean
+          show_wifi?: boolean
+          updated_at?: string
+          website?: string
+          whatsapp?: string
+          wifi_password?: string
+          wifi_ssid?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -238,7 +292,9 @@ export type Database = {
         }
         Returns: boolean
       }
+      get_store_settings: { Args: Record<string, never>; Returns: Json }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      upsert_store_settings: { Args: { p_settings: Json }; Returns: Json }
       update_order_status: {
         Args: {
           p_new_status: Database["public"]["Enums"]["order_status"]

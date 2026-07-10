@@ -339,3 +339,16 @@ export const getStaffWithEmail = createServerFn({ method: "GET" })
     const emailMap = new Map(authUsers.users.map((u) => [u.id, u.email]));
     return (profiles ?? []).map((p) => ({ ...p, email: emailMap.get(p.id) ?? "-" }));
   });
+
+export const getOrderById = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ orderId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: order, error } = await context.supabase
+      .from("orders")
+      .select("*, order_items(*)")
+      .eq("id", data.orderId)
+      .single();
+    if (error || !order) throw new Error("Pesanan tidak ditemukan.");
+    return order as Record<string, unknown>;
+  });

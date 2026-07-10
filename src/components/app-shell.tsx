@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { BarChart3, Boxes, ClipboardList, FolderTree, LogOut, Menu, Package, ShoppingBag, Users } from "lucide-react";
+import { BarChart3, Boxes, ClipboardList, FolderTree, LogOut, Menu, Package, Printer, ShoppingBag, Users } from "lucide-react";
 import type { ReactNode } from "react";
 import { Brand } from "./brand";
 import { Button } from "./ui/button";
@@ -15,6 +15,7 @@ const links = [
   { to: "/owner/products", label: "Produk", icon: Package, owner: true },
   { to: "/owner/categories", label: "Kategori", icon: FolderTree, owner: true },
   { to: "/owner/staff", label: "Staf", icon: Users, owner: true },
+  { to: "/app/settings/printer", label: "Printer", icon: Printer },
 ] as const;
 
 export function AppShell({ children, title, eyebrow, role }: { children: ReactNode; title: string; eyebrow: string; role: "owner" | "cashier" }) {

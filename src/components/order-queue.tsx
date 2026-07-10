@@ -6,7 +6,9 @@ import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
-import { confirmPayment, changeOrderStatus, getStaffOrders } from "@/lib/pos.functions";
+import { confirmPayment, changeOrderStatus, getOrderById, getStaffOrders } from "@/lib/pos.functions";
+import { getStoreSettings } from "@/lib/settings.functions";
+import { printReceipt } from "@/lib/print";
 import { formatDateTime, formatIDR } from "@/lib/format";
 
 type StatusKey = "pending_payment" | "confirmed" | "processing";
@@ -66,7 +68,16 @@ export function OrderQueue() {
   async function act(o: any) {
     setBusyId(o.id);
     try {
-      if (o.status === "pending_payment") await confirm({ data: { orderId: o.id } });
+      if (o.status === "pending_payment") {
+        await confirm({ data: { orderId: o.id } });
+        const [orderData, storeData] = await Promise.all([
+          getOrderById({ data: { orderId: o.id } }),
+          getStoreSettings(),
+        ]);
+        const printResult = await printReceipt(orderData as any, storeData as any);
+        if (printResult === "thermal") toast.success("Struk sedang dicetak.");
+        else if (printResult === "pdf") toast.info("Printer tidak tersedia. Pelanggan dapat mengunduh struk.");
+      }
       else await change({ data: { orderId: o.id, status: o.status === "confirmed" ? "processing" : "completed" } });
       toast.success("Status pesanan diperbarui.");
       await query.refetch();

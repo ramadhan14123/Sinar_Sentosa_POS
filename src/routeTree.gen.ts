@@ -10,15 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AppRouteImport } from './routes/app'
+import { Route as AppRouteRouteImport } from './routes/app/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as OrderCodeRouteImport } from './routes/order.$code'
 import { Route as AuthenticatedOwnerRouteImport } from './routes/_authenticated/owner'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCashierRouteImport } from './routes/_authenticated/cashier'
 import { Route as AuthenticatedOwnerIndexRouteImport } from './routes/_authenticated/owner.index'
 import { Route as AuthenticatedCashierIndexRouteImport } from './routes/_authenticated/cashier.index'
+import { Route as AppSettingsPrinterRouteImport } from './routes/app/settings.printer'
 import { Route as AuthenticatedOwnerStaffRouteImport } from './routes/_authenticated/owner.staff'
 import { Route as AuthenticatedOwnerProductsRouteImport } from './routes/_authenticated/owner.products'
 import { Route as AuthenticatedOwnerCategoriesRouteImport } from './routes/_authenticated/owner.categories'
@@ -30,7 +32,7 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppRoute = AppRouteImport.update({
+const AppRouteRoute = AppRouteRouteImport.update({
   id: '/app',
   path: '/app',
   getParentRoute: () => rootRouteImport,
@@ -43,6 +45,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRouteRoute,
 } as any)
 const OrderCodeRoute = OrderCodeRouteImport.update({
   id: '/order/$code',
@@ -75,6 +82,11 @@ const AuthenticatedCashierIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedCashierRoute,
   } as any)
+const AppSettingsPrinterRoute = AppSettingsPrinterRouteImport.update({
+  id: '/settings/printer',
+  path: '/settings/printer',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AuthenticatedOwnerStaffRoute = AuthenticatedOwnerStaffRouteImport.update({
   id: '/staff',
   path: '/staff',
@@ -106,31 +118,34 @@ const AuthenticatedCashierInventoryRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/cashier': typeof AuthenticatedCashierRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/owner': typeof AuthenticatedOwnerRouteWithChildren
   '/order/$code': typeof OrderCodeRoute
+  '/app/': typeof AppIndexRoute
   '/cashier/inventory': typeof AuthenticatedCashierInventoryRoute
   '/cashier/pos': typeof AuthenticatedCashierPosRoute
   '/owner/categories': typeof AuthenticatedOwnerCategoriesRoute
   '/owner/products': typeof AuthenticatedOwnerProductsRoute
   '/owner/staff': typeof AuthenticatedOwnerStaffRoute
+  '/app/settings/printer': typeof AppSettingsPrinterRoute
   '/cashier/': typeof AuthenticatedCashierIndexRoute
   '/owner/': typeof AuthenticatedOwnerIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/order/$code': typeof OrderCodeRoute
+  '/app': typeof AppIndexRoute
   '/cashier/inventory': typeof AuthenticatedCashierInventoryRoute
   '/cashier/pos': typeof AuthenticatedCashierPosRoute
   '/owner/categories': typeof AuthenticatedOwnerCategoriesRoute
   '/owner/products': typeof AuthenticatedOwnerProductsRoute
   '/owner/staff': typeof AuthenticatedOwnerStaffRoute
+  '/app/settings/printer': typeof AppSettingsPrinterRoute
   '/cashier': typeof AuthenticatedCashierIndexRoute
   '/owner': typeof AuthenticatedOwnerIndexRoute
 }
@@ -138,17 +153,19 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/cashier': typeof AuthenticatedCashierRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/owner': typeof AuthenticatedOwnerRouteWithChildren
   '/order/$code': typeof OrderCodeRoute
+  '/app/': typeof AppIndexRoute
   '/_authenticated/cashier/inventory': typeof AuthenticatedCashierInventoryRoute
   '/_authenticated/cashier/pos': typeof AuthenticatedCashierPosRoute
   '/_authenticated/owner/categories': typeof AuthenticatedOwnerCategoriesRoute
   '/_authenticated/owner/products': typeof AuthenticatedOwnerProductsRoute
   '/_authenticated/owner/staff': typeof AuthenticatedOwnerStaffRoute
+  '/app/settings/printer': typeof AppSettingsPrinterRoute
   '/_authenticated/cashier/': typeof AuthenticatedCashierIndexRoute
   '/_authenticated/owner/': typeof AuthenticatedOwnerIndexRoute
 }
@@ -162,25 +179,28 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/owner'
     | '/order/$code'
+    | '/app/'
     | '/cashier/inventory'
     | '/cashier/pos'
     | '/owner/categories'
     | '/owner/products'
     | '/owner/staff'
+    | '/app/settings/printer'
     | '/cashier/'
     | '/owner/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/app'
     | '/auth'
     | '/dashboard'
     | '/order/$code'
+    | '/app'
     | '/cashier/inventory'
     | '/cashier/pos'
     | '/owner/categories'
     | '/owner/products'
     | '/owner/staff'
+    | '/app/settings/printer'
     | '/cashier'
     | '/owner'
   id:
@@ -193,11 +213,13 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/owner'
     | '/order/$code'
+    | '/app/'
     | '/_authenticated/cashier/inventory'
     | '/_authenticated/cashier/pos'
     | '/_authenticated/owner/categories'
     | '/_authenticated/owner/products'
     | '/_authenticated/owner/staff'
+    | '/app/settings/printer'
     | '/_authenticated/cashier/'
     | '/_authenticated/owner/'
   fileRoutesById: FileRoutesById
@@ -205,7 +227,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  AppRoute: typeof AppRoute
+  AppRouteRoute: typeof AppRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   OrderCodeRoute: typeof OrderCodeRoute
 }
@@ -223,7 +245,7 @@ declare module '@tanstack/react-router' {
       id: '/app'
       path: '/app'
       fullPath: '/app'
-      preLoaderRoute: typeof AppRouteImport
+      preLoaderRoute: typeof AppRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -239,6 +261,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRouteRoute
     }
     '/order/$code': {
       id: '/order/$code'
@@ -281,6 +310,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/cashier/'
       preLoaderRoute: typeof AuthenticatedCashierIndexRouteImport
       parentRoute: typeof AuthenticatedCashierRoute
+    }
+    '/app/settings/printer': {
+      id: '/app/settings/printer'
+      path: '/settings/printer'
+      fullPath: '/app/settings/printer'
+      preLoaderRoute: typeof AppSettingsPrinterRouteImport
+      parentRoute: typeof AppRouteRoute
     }
     '/_authenticated/owner/staff': {
       id: '/_authenticated/owner/staff'
@@ -367,10 +403,24 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface AppRouteRouteChildren {
+  AppIndexRoute: typeof AppIndexRoute
+  AppSettingsPrinterRoute: typeof AppSettingsPrinterRoute
+}
+
+const AppRouteRouteChildren: AppRouteRouteChildren = {
+  AppIndexRoute: AppIndexRoute,
+  AppSettingsPrinterRoute: AppSettingsPrinterRoute,
+}
+
+const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
+  AppRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  AppRoute: AppRoute,
+  AppRouteRoute: AppRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   OrderCodeRoute: OrderCodeRoute,
 }

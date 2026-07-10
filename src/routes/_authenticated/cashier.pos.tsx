@@ -11,8 +11,10 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { useRole } from "@/hooks/use-role";
 import { supabase } from "@/integrations/supabase/client";
 import { formatIDR } from "@/lib/format";
-import { confirmPayment } from "@/lib/pos.functions";
+import { confirmPayment, getOrderById } from "@/lib/pos.functions";
+import { getStoreSettings } from "@/lib/settings.functions";
 import { catalogQuery } from "@/lib/queries";
+import { printReceipt } from "@/lib/print";
 
 export const Route = createFileRoute("/_authenticated/cashier/pos")({
   loader: ({ context }) => context.queryClient.ensureQueryData(catalogQuery),
@@ -80,6 +82,19 @@ function CashierPosPage() {
       if (error || !result || typeof result !== "object" || Array.isArray(result)) throw new Error(error?.message ?? "Pesanan gagal dibuat.");
       const orderId = String((result as Record<string, unknown>).order_id);
       await confirm({ data: { orderId } });
+      const [orderData, storeData] = await Promise.all([
+        getOrderById({ data: { orderId } }),
+        getStoreSettings(),
+      ]);
+      const printResult = await printReceipt(
+        orderData as any,
+        storeData as any,
+      );
+      if (printResult === "thermal") {
+        toast.success("Struk sedang dicetak.");
+      } else if (printResult === "pdf") {
+        toast.info("Printer tidak tersedia. Pelanggan dapat mengunduh struk secara mandiri.");
+      }
       toast.success(`Pesanan ${String((result as Record<string, unknown>).order_code)} dibuat & dibayar.`);
       setCart({});
       setName("");
