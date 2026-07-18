@@ -35,6 +35,8 @@ export interface ReceiptData {
   customerName: string;
   cashierName: string;
   totalIdr: number;
+  cashReceived: number;
+  change: number;
   createdAt: string;
   items: { name: string; price: number; quantity: number; subtotal: number }[];
   store: StoreSettings;

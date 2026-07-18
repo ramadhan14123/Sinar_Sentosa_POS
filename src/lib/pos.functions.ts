@@ -63,10 +63,11 @@ export const getStaffOrders = createServerFn({ method: "GET" })
 
 export const confirmPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ orderId: z.string().uuid() }).parse(input))
+  .inputValidator((input) => z.object({ orderId: z.string().uuid(), amountReceived: z.number().int().min(0).default(0) }).parse(input))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.rpc("confirm_order_payment", {
       p_order_id: data.orderId,
+      p_amount_received: data.amountReceived,
     });
     if (error) throw new Error(error.message);
     return { ok: true };

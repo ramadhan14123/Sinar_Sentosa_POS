@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useRole } from "@/hooks/use-role";
+import { useActionGuard } from "@/hooks/use-action-guard";
 import { getStoreSettings, upsertStoreSettings } from "@/lib/settings.functions";
 import { loadPrinterConfig, savePrinterConfig } from "@/lib/print/printer-store";
 import {
@@ -87,6 +88,8 @@ function PrinterSettingsPage() {
 
   const [connecting, setConnecting] = useState(false);
 
+  const { saving, guard } = useActionGuard();
+
   // Permission & service state
   const [bluetoothOff, setBluetoothOff] = useState(false);
   const [bluetoothPermissionDenied, setBluetoothPermissionDenied] = useState(false);
@@ -123,13 +126,15 @@ function PrinterSettingsPage() {
   }
 
   async function handleSaveStore() {
-    try {
-      await saveSettings({ data: store as Partial<StoreSettings> });
-      toast.success("Pengaturan toko disimpan.");
-      await queryClient.invalidateQueries({ queryKey: ["store-settings"] });
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Gagal menyimpan pengaturan.");
-    }
+    await guard(async () => {
+      try {
+        await saveSettings({ data: store as Partial<StoreSettings> });
+        toast.success("Pengaturan toko disimpan.");
+        await queryClient.invalidateQueries({ queryKey: ["store-settings"] });
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Gagal menyimpan pengaturan.");
+      }
+    });
   }
 
   // --- Bluetooth ---
@@ -823,9 +828,9 @@ function PrinterSettingsPage() {
             <Button
               onClick={handleSaveStore}
               className="h-11 w-full rounded-xl"
-              disabled={!storeLoaded}
+              disabled={!storeLoaded || saving}
             >
-              <Save className="size-4" /> Simpan Pengaturan Toko
+              <Save className="size-4" /> {saving ? "Menyimpan..." : "Simpan Pengaturan Toko"}
             </Button>
           </div>
         </section>

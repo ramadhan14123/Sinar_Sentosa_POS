@@ -244,6 +244,10 @@ function buildThermalReceipt(enc: EscPosEncoder, receipt: ReceiptData): EscPosEn
     .bold(true)
     .row("TOTAL", `Rp${receipt.totalIdr.toLocaleString("id-ID")}`)
     .bold(false);
+  if (receipt.cashReceived > 0) {
+    enc.row("Uang Diterima", `Rp${receipt.cashReceived.toLocaleString("id-ID")}`);
+    enc.row("Kembalian", `Rp${receipt.change.toLocaleString("id-ID")}`);
+  }
   enc.hr();
 
   enc.align("center");

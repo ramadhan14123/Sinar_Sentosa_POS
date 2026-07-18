@@ -69,6 +69,7 @@ function CashierPosPage() {
   const [name, setName] = useState("");
   const [cart, setCart] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [cashReceived, setCashReceived] = useState("");
 
   const filtered = useMemo(
     () =>
@@ -104,6 +105,8 @@ function CashierPosPage() {
   async function submit() {
     if (name.trim().length < 2) return toast.error("Isi nama pelanggan minimal 2 karakter.");
     if (!items.length) return toast.error("Keranjang masih kosong.");
+    if (!cashReceived || Number(cashReceived) < total)
+      return toast.error("Uang diterima kurang dari total.");
     setSubmitting(true);
     try {
       const { data: result, error } = await supabase.rpc("create_order", {
@@ -113,7 +116,7 @@ function CashierPosPage() {
       if (error || !result || typeof result !== "object" || Array.isArray(result))
         throw new Error(error?.message ?? "Pesanan gagal dibuat.");
       const orderId = String((result as Record<string, unknown>).order_id);
-      await confirm({ data: { orderId } });
+      await confirm({ data: { orderId, amountReceived: Number(cashReceived) } });
 
       const { data: userData } = await supabase.auth.getUser();
       const userId = userData?.user?.id;
@@ -138,6 +141,7 @@ function CashierPosPage() {
       );
       setCart({});
       setName("");
+      setCashReceived("");
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["catalog"] }),
         queryClient.invalidateQueries({ queryKey: ["staff-orders"] }),
@@ -294,6 +298,8 @@ function CashierPosPage() {
               total={total}
               name={name}
               setName={setName}
+              cashReceived={cashReceived}
+              setCashReceived={setCashReceived}
               update={update}
               submit={submit}
               submitting={submitting}
@@ -326,6 +332,8 @@ function CashierPosPage() {
                   total={total}
                   name={name}
                   setName={setName}
+                  cashReceived={cashReceived}
+                  setCashReceived={setCashReceived}
                   update={update}
                   submit={submit}
                   submitting={submitting}
@@ -344,6 +352,8 @@ function CartContent({
   total,
   name,
   setName,
+  cashReceived,
+  setCashReceived,
   update,
   submit,
   submitting,
@@ -352,6 +362,8 @@ function CartContent({
   total: number;
   name: string;
   setName: (v: string) => void;
+  cashReceived: string;
+  setCashReceived: (v: string) => void;
   update: (id: string, amt: number, max: number) => void;
   submit: () => void;
   submitting: boolean;
@@ -405,6 +417,28 @@ function CartContent({
           <span className="font-display text-3xl font-extrabold text-primary">
             {formatIDR(total)}
           </span>
+        </div>
+        <div className="space-y-1.5">
+          <label
+            htmlFor="pos-cash"
+            className="block text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground"
+          >
+            Uang Diterima
+          </label>
+          <Input
+            id="pos-cash"
+            type="number"
+            min={0}
+            value={cashReceived}
+            onChange={(e) => setCashReceived(e.target.value)}
+            placeholder="0"
+            className="h-11 rounded-xl border-border/60 bg-muted/40"
+          />
+          {Number(cashReceived) > 0 && Number(cashReceived) >= total && (
+            <p className="text-sm font-semibold text-green-600">
+              Kembalian: {formatIDR(Number(cashReceived) - total)}
+            </p>
+          )}
         </div>
         <div className="space-y-1.5">
           <label

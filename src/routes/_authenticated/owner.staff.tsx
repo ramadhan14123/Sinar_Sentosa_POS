@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRole } from "@/hooks/use-role";
+import { useActionGuard } from "@/hooks/use-action-guard";
 import { createCashier, deleteCashier, getStaffWithEmail } from "@/lib/pos.functions";
 
 export const Route = createFileRoute("/_authenticated/owner/staff")({ component: StaffPage });
@@ -27,6 +28,7 @@ function StaffPage() {
   const remove = useServerFn(deleteCashier);
   const fetchStaff = useServerFn(getStaffWithEmail);
   const [form, setForm] = useState({ fullName: "", email: "", password: "" });
+  const { saving, guard } = useActionGuard();
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; full_name: string } | null>(null);
   const [confirmText, setConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
@@ -62,14 +64,16 @@ function StaffPage() {
           className="rounded-2xl border bg-background p-6"
           onSubmit={async (e) => {
             e.preventDefault();
-            try {
-              await create({ data: form });
-              toast.success("Akun Kasir berhasil dibuat.");
-              setForm({ fullName: "", email: "", password: "" });
-              await query.refetch();
-            } catch (err) {
-              toast.error(err instanceof Error ? err.message : "Gagal membuat akun.");
-            }
+            await guard(async () => {
+              try {
+                await create({ data: form });
+                toast.success("Akun Kasir berhasil dibuat.");
+                setForm({ fullName: "", email: "", password: "" });
+                await query.refetch();
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Gagal membuat akun.");
+              }
+            });
           }}
         >
           <div className="grid size-11 place-items-center rounded-xl bg-info-soft text-info">
@@ -107,7 +111,7 @@ function StaffPage() {
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
               />
             </div>
-            <Button className="w-full">Buat akun Kasir</Button>
+            <Button className="w-full" disabled={saving}>{saving ? "Menyimpan..." : "Buat akun Kasir"}</Button>
           </div>
         </form>
 

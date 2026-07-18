@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useRole } from "@/hooks/use-role";
+import { useActionGuard } from "@/hooks/use-action-guard";
 import { deleteCategory, saveCategory } from "@/lib/pos.functions";
 
 export const Route = createFileRoute("/_authenticated/owner/categories")({ component: CategoriesPage });
@@ -19,6 +20,7 @@ function CategoriesPage() {
   const save = useServerFn(saveCategory);
   const remove = useServerFn(deleteCategory);
   const [name, setName] = useState("");
+  const { saving, guard } = useActionGuard();
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -56,14 +58,16 @@ function CategoriesPage() {
           className="rounded-2xl border bg-background p-5"
           onSubmit={async (e) => {
             e.preventDefault();
-            try {
-              await save({ data: { name, sortOrder: query.data?.length ?? 0 } });
-              setName("");
-              toast.success("Kategori ditambahkan.");
-              await query.refetch();
-            } catch (err) {
-              toast.error(err instanceof Error ? err.message : "Gagal menambah kategori.");
-            }
+            await guard(async () => {
+              try {
+                await save({ data: { name, sortOrder: query.data?.length ?? 0 } });
+                setName("");
+                toast.success("Kategori ditambahkan.");
+                await query.refetch();
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Gagal menambah kategori.");
+              }
+            });
           }}
         >
           <div className="grid size-10 place-items-center rounded-xl bg-primary-soft text-primary">
@@ -80,7 +84,7 @@ function CategoriesPage() {
             placeholder="Contoh: Minuman"
             maxLength={60}
           />
-          <Button className="mt-3 w-full">Tambah kategori</Button>
+          <Button className="mt-3 w-full" disabled={saving}>{saving ? "Menyimpan..." : "Tambah kategori"}</Button>
         </form>
 
         <div className="overflow-hidden rounded-2xl border bg-background">

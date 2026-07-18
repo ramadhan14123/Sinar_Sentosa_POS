@@ -17,6 +17,7 @@ function mapOrder(raw: Record<string, any>): OrderReceipt {
     customer_name: raw.customer_name ?? "",
     cashier_name: "",
     total_idr: raw.total_idr ?? 0,
+    amount_received: raw.amount_received ?? 0,
     created_at: raw.created_at ?? "",
     items,
   };

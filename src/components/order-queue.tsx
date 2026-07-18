@@ -6,6 +6,7 @@ import {
   ArrowUpNarrowWide,
   CheckCircle2,
   ChefHat,
+  Printer,
   ChevronDown,
   CircleDollarSign,
   Clock3,
@@ -28,6 +29,7 @@ import { getStoreSettings } from "@/lib/settings.functions";
 import { printReceipt } from "@/lib/print";
 import { supabase } from "@/integrations/supabase/client";
 import type { StoreSettings } from "@/lib/print/types";
+import { useActionGuard } from "@/hooks/use-action-guard";
 import { formatDateTime, formatIDR } from "@/lib/format";
 
 type StatusKey = "pending_payment" | "confirmed" | "processing";
@@ -69,6 +71,8 @@ export function OrderQueue() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [cashAmounts, setCashAmounts] = useState<Record<string, string>>({});
+  const { saving: printing, guard: guardPrint } = useActionGuard();
 
   const active = useMemo(
     () => (query.data ?? []).filter((o) => !["completed", "cancelled"].includes(o.status)) as any[],
@@ -108,7 +112,8 @@ export function OrderQueue() {
     setBusyId(o.id);
     try {
       if (o.status === "pending_payment") {
-        await confirm({ data: { orderId: o.id } });
+        const amt = Math.max(Number(cashAmounts[o.id]) || 0, o.total_idr);
+        await confirm({ data: { orderId: o.id, amountReceived: amt } });
         const { data: userData } = await supabase.auth.getUser();
         const userId = userData?.user?.id;
 
@@ -136,6 +141,25 @@ export function OrderQueue() {
     } finally {
       setBusyId(null);
     }
+  }
+
+  async function handleReprint(o: any) {
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id;
+
+    const [orderData, storeData, profileResult] = await Promise.all([
+      getOrderById({ data: { orderId: o.id } }),
+      getStoreSettings(),
+      userId
+        ? supabase.from("profiles").select("full_name").eq("id", userId).single()
+        : Promise.resolve({ data: null }),
+    ]);
+    const cashierName = profileResult?.data?.full_name ?? "Kasir";
+
+    const printResult = await printReceipt(orderData as Record<string, any>, storeData as StoreSettings, cashierName);
+    if (printResult === "thermal") toast.success("Struk sedang dicetak.");
+    else if (printResult === "pdf")
+      toast.info("Printer tidak tersedia. Pelanggan dapat mengunduh struk.");
   }
 
   if (query.isLoading) {
@@ -312,6 +336,33 @@ export function OrderQueue() {
                       <span className="font-display text-base font-extrabold text-primary">
                         {formatIDR(o.total_idr)}
                       </span>
+                    </div>
+                    {o.status === "pending_payment" && (
+                      <div className="mt-3 flex items-center gap-3 border-t border-border/60 pt-2">
+                        <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground shrink-0">
+                          Uang Diterima
+                        </label>
+                        <Input
+                          type="number"
+                          min={o.total_idr}
+                          value={cashAmounts[o.id] ?? ""}
+                          onChange={(e) =>
+                            setCashAmounts((prev) => ({ ...prev, [o.id]: e.target.value }))
+                          }
+                          placeholder={o.total_idr.toLocaleString("id-ID")}
+                          className="h-9 w-40 rounded-lg text-sm"
+                        />
+                        {Number(cashAmounts[o.id]) >= o.total_idr && (
+                          <span className="text-xs font-semibold text-green-600">
+                            Kembali: {formatIDR(Number(cashAmounts[o.id]) - o.total_idr)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <div className="flex justify-end pt-2">
+                      <Button size="sm" variant="outline" disabled={printing} onClick={() => guardPrint(async () => { await handleReprint(o); })}>
+                        <Printer className="size-4" /> Cetak Struk
+                      </Button>
                     </div>
                   </div>
                 )}
