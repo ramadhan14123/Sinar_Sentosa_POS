@@ -61,6 +61,47 @@ export const getStaffOrders = createServerFn({ method: "GET" })
     return data;
   });
 
+export const getOrdersHistory = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z
+      .object({
+        page: z.number().int().min(1).default(1),
+        pageSize: z.number().int().min(1).max(100).default(20),
+        status: z.enum(["completed", "cancelled"]).optional(),
+        search: z.string().max(80).optional(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const from = (data.page - 1) * data.pageSize;
+    const to = from + data.pageSize - 1;
+
+    let query = context.supabase
+      .from("orders")
+      .select("*, order_items(*)", { count: "exact" })
+      .not("status", "in", '("pending_payment","confirmed","processing")');
+
+    if (data.status) query = query.eq("status", data.status);
+    if (data.search) {
+      const s = `%${data.search}%`;
+      query = query.or(`customer_name.ilike.${s},order_code.ilike.${s}`);
+    }
+
+    const { data: orders, count, error } = await query
+      .order("created_at", { ascending: false })
+      .range(from, to);
+
+    if (error) throw new Error("Gagal memuat riwayat pesanan.");
+    return {
+      orders,
+      total: count ?? 0,
+      page: data.page,
+      pageSize: data.pageSize,
+      totalPages: Math.ceil((count ?? 0) / data.pageSize),
+    };
+  });
+
 export const confirmPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ orderId: z.string().uuid(), amountReceived: z.number().int().min(0).default(0) }).parse(input))
@@ -169,19 +210,30 @@ export const deleteCategory = createServerFn({ method: "POST" })
 
 export const getAnalytics = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ period: z.enum(["day", "month", "year"]) }).parse(input))
+  .inputValidator((input) =>
+    z
+      .object({
+        period: z.enum(["day", "month", "year"]),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+      })
+      .parse(input),
+  )
   .handler(async ({ data, context }) => {
     await assertRole(context, "owner");
-    const now = new Date();
+    const now = data.startDate ? new Date(data.startDate) : new Date();
     const jakartaNow = getJakartaDateParts(now);
     const start =
-      data.period === "day"
-        ? jakartaWallTimeToUtc(jakartaNow.year, jakartaNow.month, jakartaNow.date)
-        : data.period === "month"
-          ? jakartaWallTimeToUtc(jakartaNow.year, jakartaNow.month, 1)
-          : jakartaWallTimeToUtc(jakartaNow.year, 0, 1);
-    const end =
-      data.period === "day"
+      data.startDate
+        ? new Date(data.startDate)
+        : data.period === "day"
+          ? jakartaWallTimeToUtc(jakartaNow.year, jakartaNow.month, jakartaNow.date)
+          : data.period === "month"
+            ? jakartaWallTimeToUtc(jakartaNow.year, jakartaNow.month, 1)
+            : jakartaWallTimeToUtc(jakartaNow.year, 0, 1);
+    const end = data.endDate
+      ? new Date(data.endDate)
+      : data.period === "day"
         ? jakartaWallTimeToUtc(jakartaNow.year, jakartaNow.month, jakartaNow.date + 1)
         : data.period === "month"
           ? jakartaWallTimeToUtc(jakartaNow.year, jakartaNow.month + 1, 1)

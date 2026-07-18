@@ -57,6 +57,7 @@ export interface ThermalPrinterPluginDef {
   getConnectionStatus(): Promise<ConnectionStatus>;
   getWifiInfo(): Promise<WifiNetworkInfo>;
   testPrint(): Promise<{ success: boolean }>;
+  openCashDrawer(): Promise<{ success: boolean }>;
   openWifiSettings(): Promise<void>;
   openBluetoothSettings(): Promise<void>;
   openAppSettings(): Promise<void>;
@@ -164,6 +165,12 @@ function createMockPlugin(): ThermalPrinterPluginDef {
     async testPrint() {
       console.log("[Mock] Test print sent to printer");
       await new Promise((r) => setTimeout(r, 1000));
+      return { success: true };
+    },
+
+    async openCashDrawer() {
+      console.log("[Mock] Cash drawer opened");
+      await new Promise((r) => setTimeout(r, 300));
       return { success: true };
     },
 

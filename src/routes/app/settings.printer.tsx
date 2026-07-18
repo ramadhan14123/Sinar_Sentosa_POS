@@ -38,6 +38,7 @@ import {
   openWifiSettings,
   openBluetoothSettings,
   openAppSettings,
+  openCashDrawer,
 } from "@/lib/print/thermal-printer";
 import type { ConnectionType, PrinterConfig, StoreSettings } from "@/lib/print/types";
 import type { BluetoothDevice, UsbDeviceInfo, WifiNetworkInfo } from "@/lib/print/capacitor-plugin";
@@ -85,6 +86,7 @@ function PrinterSettingsPage() {
   // Testing state
   const [testing, setTesting] = useState(false);
   const [testPrinting, setTestPrinting] = useState(false);
+  const [testingDrawer, setTestingDrawer] = useState(false);
 
   const [connecting, setConnecting] = useState(false);
 
@@ -277,6 +279,22 @@ function PrinterSettingsPage() {
       toast.error("Test print gagal.");
     } finally {
       setTestPrinting(false);
+    }
+  }
+
+  async function handleTestCashDrawer() {
+    setTestingDrawer(true);
+    try {
+      const ok = await openCashDrawer();
+      if (ok) {
+        toast.success("Cash drawer terbuka.");
+      } else {
+        toast.error("Cash drawer gagal.");
+      }
+    } catch {
+      toast.error("Cash drawer gagal.");
+    } finally {
+      setTestingDrawer(false);
     }
   }
 
@@ -682,6 +700,14 @@ function PrinterSettingsPage() {
                   <Printer className="size-4" />
                 )}
                 Cetak Uji Coba
+              </Button>
+              <Button onClick={handleTestCashDrawer} disabled={testingDrawer} className="h-11 rounded-xl">
+                {testingDrawer ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Computer className="size-4" />
+                )}
+                Uji Cash Drawer
               </Button>
             </div>
           </section>

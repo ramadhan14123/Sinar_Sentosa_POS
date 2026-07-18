@@ -7,6 +7,7 @@ import { animate, motion, useMotionValue, useTransform } from "motion/react";
 import { Area, Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
+import { PeriodDatePicker } from "@/components/ui/period-date-picker";
 import { useRole } from "@/hooks/use-role";
 import { formatIDR } from "@/lib/format";
 import { getAnalytics } from "@/lib/pos.functions";
@@ -21,10 +22,22 @@ type ChartPoint = { bucket: string; label: string; revenue: number; orders?: num
 function OwnerPage() {
   const role = useRole();
   const [period, setPeriod] = useState<Period>("day");
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const fetchAnalytics = useServerFn(getAnalytics);
   const analytics = useQuery({
-    queryKey: ["analytics", period],
-    queryFn: () => fetchAnalytics({ data: { period } }),
+    queryKey: ["analytics", period, selectedDate.toISOString()],
+    queryFn: () =>
+      fetchAnalytics({
+        data: {
+          period,
+          startDate: selectedDate.toISOString(),
+          endDate: period === "day"
+            ? new Date(selectedDate.getTime() + 86400000).toISOString()
+            : period === "month"
+              ? new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1).toISOString()
+              : new Date(selectedDate.getFullYear() + 1, 0, 1).toISOString(),
+        },
+      }),
     enabled: role.data?.role === "owner",
   });
   if (role.data && role.data.role !== "owner") return <Navigate to="/cashier" replace />;
@@ -34,12 +47,13 @@ function OwnerPage() {
 
   return (
     <AppShell role="owner" eyebrow="Dashboard Owner" title="Ringkasan Bisnis">
-      <div className="mb-5 flex flex-wrap gap-2">
+      <div className="mb-5 flex flex-wrap items-center gap-2">
         {(Object.keys(periodLabels) as Period[]).map((p) => (
-          <Button key={p} variant={period === p ? "default" : "outline"} size="sm" className="rounded-full" onClick={() => setPeriod(p)}>
+          <Button key={p} variant={period === p ? "default" : "outline"} size="sm" className="rounded-full" onClick={() => { setPeriod(p); setSelectedDate(new Date()); }}>
             {periodLabels[p]}
           </Button>
         ))}
+        <PeriodDatePicker period={period} value={selectedDate} onChange={setSelectedDate} />
       </div>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {analytics.isPending ? (

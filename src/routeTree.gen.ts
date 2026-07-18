@@ -26,6 +26,7 @@ import { Route as AuthenticatedOwnerProductsRouteImport } from './routes/_authen
 import { Route as AuthenticatedOwnerCategoriesRouteImport } from './routes/_authenticated/owner.categories'
 import { Route as AuthenticatedCashierPosRouteImport } from './routes/_authenticated/cashier.pos'
 import { Route as AuthenticatedCashierInventoryRouteImport } from './routes/_authenticated/cashier.inventory'
+import { Route as AuthenticatedCashierHistoryRouteImport } from './routes/_authenticated/cashier.history'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -115,6 +116,12 @@ const AuthenticatedCashierInventoryRoute =
     path: '/inventory',
     getParentRoute: () => AuthenticatedCashierRoute,
   } as any)
+const AuthenticatedCashierHistoryRoute =
+  AuthenticatedCashierHistoryRouteImport.update({
+    id: '/history',
+    path: '/history',
+    getParentRoute: () => AuthenticatedCashierRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -125,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/owner': typeof AuthenticatedOwnerRouteWithChildren
   '/order/$code': typeof OrderCodeRoute
   '/app/': typeof AppIndexRoute
+  '/cashier/history': typeof AuthenticatedCashierHistoryRoute
   '/cashier/inventory': typeof AuthenticatedCashierInventoryRoute
   '/cashier/pos': typeof AuthenticatedCashierPosRoute
   '/owner/categories': typeof AuthenticatedOwnerCategoriesRoute
@@ -140,6 +148,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/order/$code': typeof OrderCodeRoute
   '/app': typeof AppIndexRoute
+  '/cashier/history': typeof AuthenticatedCashierHistoryRoute
   '/cashier/inventory': typeof AuthenticatedCashierInventoryRoute
   '/cashier/pos': typeof AuthenticatedCashierPosRoute
   '/owner/categories': typeof AuthenticatedOwnerCategoriesRoute
@@ -160,6 +169,7 @@ export interface FileRoutesById {
   '/_authenticated/owner': typeof AuthenticatedOwnerRouteWithChildren
   '/order/$code': typeof OrderCodeRoute
   '/app/': typeof AppIndexRoute
+  '/_authenticated/cashier/history': typeof AuthenticatedCashierHistoryRoute
   '/_authenticated/cashier/inventory': typeof AuthenticatedCashierInventoryRoute
   '/_authenticated/cashier/pos': typeof AuthenticatedCashierPosRoute
   '/_authenticated/owner/categories': typeof AuthenticatedOwnerCategoriesRoute
@@ -180,6 +190,7 @@ export interface FileRouteTypes {
     | '/owner'
     | '/order/$code'
     | '/app/'
+    | '/cashier/history'
     | '/cashier/inventory'
     | '/cashier/pos'
     | '/owner/categories'
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/order/$code'
     | '/app'
+    | '/cashier/history'
     | '/cashier/inventory'
     | '/cashier/pos'
     | '/owner/categories'
@@ -214,6 +226,7 @@ export interface FileRouteTypes {
     | '/_authenticated/owner'
     | '/order/$code'
     | '/app/'
+    | '/_authenticated/cashier/history'
     | '/_authenticated/cashier/inventory'
     | '/_authenticated/cashier/pos'
     | '/_authenticated/owner/categories'
@@ -353,16 +366,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCashierInventoryRouteImport
       parentRoute: typeof AuthenticatedCashierRoute
     }
+    '/_authenticated/cashier/history': {
+      id: '/_authenticated/cashier/history'
+      path: '/history'
+      fullPath: '/cashier/history'
+      preLoaderRoute: typeof AuthenticatedCashierHistoryRouteImport
+      parentRoute: typeof AuthenticatedCashierRoute
+    }
   }
 }
 
 interface AuthenticatedCashierRouteChildren {
+  AuthenticatedCashierHistoryRoute: typeof AuthenticatedCashierHistoryRoute
   AuthenticatedCashierInventoryRoute: typeof AuthenticatedCashierInventoryRoute
   AuthenticatedCashierPosRoute: typeof AuthenticatedCashierPosRoute
   AuthenticatedCashierIndexRoute: typeof AuthenticatedCashierIndexRoute
 }
 
 const AuthenticatedCashierRouteChildren: AuthenticatedCashierRouteChildren = {
+  AuthenticatedCashierHistoryRoute: AuthenticatedCashierHistoryRoute,
   AuthenticatedCashierInventoryRoute: AuthenticatedCashierInventoryRoute,
   AuthenticatedCashierPosRoute: AuthenticatedCashierPosRoute,
   AuthenticatedCashierIndexRoute: AuthenticatedCashierIndexRoute,

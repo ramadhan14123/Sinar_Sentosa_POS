@@ -152,6 +152,16 @@ export async function testPrintThermal(): Promise<boolean> {
   }
 }
 
+export async function openCashDrawer(): Promise<boolean> {
+  try {
+    const cmd = new Uint8Array([0x1B, 0x70, 0x00, 0x32, 0xFF]);
+    return await sendEscPosData(cmd);
+  } catch (e) {
+    console.error("[ThermalPrinter] openCashDrawer failed", e);
+    return false;
+  }
+}
+
 export async function openWifiSettings(): Promise<void> {
   try {
     await plugin.openWifiSettings();
@@ -187,6 +197,9 @@ export async function printReceiptThermal(
     await debugLog(`[Thermal] printReceiptThermal: ESC/POS data built (${data.length} bytes), sending...`);
     const ok = await sendEscPosData(data);
     await debugLog(`[Thermal] printReceiptThermal: sendEscPosData returned ${ok}`);
+    if (ok) {
+      await openCashDrawer();
+    }
     return ok;
   } catch (e) {
     console.error("[ThermalPrinter] printReceiptThermal exception", e);
