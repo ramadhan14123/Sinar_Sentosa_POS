@@ -1,5 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   BarChart3,
   Boxes,
@@ -25,6 +26,7 @@ import {
   SheetTrigger,
 } from "./ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
+import { getStaffOrders } from "@/lib/pos.functions";
 
 const links = [
   { to: "/owner", label: "Ringkasan", icon: BarChart3, owner: true },
@@ -52,6 +54,13 @@ export function AppShell({
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const visible = links.filter((link) => role === "owner" || !("owner" in link));
+  const fetchOrders = useServerFn(getStaffOrders);
+  const { data: orders } = useQuery({
+    queryKey: ["staff-orders"],
+    queryFn: () => fetchOrders(),
+    refetchInterval: 5000,
+  });
+  const totalActive = (orders ?? []).filter((o: any) => !["completed", "cancelled"].includes(o.status)).length;
   async function signOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
@@ -71,6 +80,11 @@ export function AppShell({
             >
               <Icon className="size-4" />
               {label}
+              {to === "/cashier" && totalActive > 0 && (
+                <span className="ml-auto rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
+                  {totalActive > 9 ? "9+" : totalActive}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
@@ -109,6 +123,11 @@ export function AppShell({
                       >
                         <Icon className="size-5" />
                         {label}
+                        {to === "/cashier" && totalActive > 0 && (
+                          <span className="ml-auto rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
+                            {totalActive > 99 ? "99+" : totalActive}
+                          </span>
+                        )}
                       </Link>
                     </SheetClose>
                   ))}
@@ -143,10 +162,15 @@ export function AppShell({
             <Link
               key={to}
               to={to}
-              className={`flex min-w-16 flex-col items-center gap-1 rounded-lg px-2 py-2 text-[10px] font-bold ${pathname === to ? "bg-primary-soft text-primary" : "text-muted-foreground"}`}
+              className={`relative flex min-w-16 flex-col items-center gap-1 rounded-lg px-2 py-2 text-[10px] font-bold ${pathname === to ? "bg-primary-soft text-primary" : "text-muted-foreground"}`}
             >
               <Icon className="size-5" />
               {label}
+              {to === "/cashier" && totalActive > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-[8px] font-bold text-primary-foreground">
+                  {totalActive > 99 ? "99+" : totalActive}
+                </span>
+              )}
             </Link>
           ))}
         </nav>

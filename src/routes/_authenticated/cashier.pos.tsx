@@ -160,7 +160,7 @@ function CashierPosPage() {
       title="Buat Pesanan"
     >
       <div className="grid gap-6 pb-28 lg:grid-cols-[1fr_380px] lg:pb-0">
-        <div>
+        <div className="min-w-0">
           <div className="relative mb-5 max-w-2xl">
             <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -292,7 +292,7 @@ function CashierPosPage() {
 
         {/* Desktop cart */}
         <aside className="hidden lg:block">
-          <div className="sticky top-24 rounded-3xl border border-border/60 bg-background p-6 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.08)]">
+          <div className="sticky top-24 flex max-h-[calc(100dvh-10rem)] flex-col rounded-3xl border border-border/60 bg-background p-6 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.08)]">
             <CartContent
               items={items}
               total={total}
@@ -321,12 +321,12 @@ function CashierPosPage() {
                 <span className="font-display font-bold">{formatIDR(total)}</span>
               </Button>
             </SheetTrigger>
-            <SheetContent className="flex w-full flex-col sm:max-w-md">
+            <SheetContent className="flex max-h-dvh w-full flex-col sm:max-w-md">
               <SheetHeader>
                 <SheetTitle className="font-display text-2xl">Keranjang kasir</SheetTitle>
                 <SheetDescription>Periksa item sebelum konfirmasi pembayaran.</SheetDescription>
               </SheetHeader>
-              <div className="mt-4 flex-1 overflow-y-auto">
+              <div className="mt-4 flex-1 min-h-0">
                 <CartContent
                   items={items}
                   total={total}
@@ -369,9 +369,9 @@ function CartContent({
   submitting: boolean;
 }) {
   return (
-    <div className="flex h-full min-h-[28rem] flex-col">
+    <div className="flex flex-1 min-h-0 flex-col">
       <h2 className="font-display text-xl font-extrabold">Pesanan baru</h2>
-      <div className="mt-6 flex-1 overflow-y-auto">
+      <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
         {items.length ? (
           <div className="space-y-3">
             {items.map((item) => (
@@ -411,7 +411,7 @@ function CartContent({
           </div>
         )}
       </div>
-      <div className="mt-6 space-y-5 border-t border-border/60 pt-5">
+      <div className="mt-4 space-y-3 border-t border-border/60 pt-4">
         <div className="flex items-end justify-between">
           <span className="text-sm font-bold">Total</span>
           <span className="font-display text-3xl font-extrabold text-primary">
