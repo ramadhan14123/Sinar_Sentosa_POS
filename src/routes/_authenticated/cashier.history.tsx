@@ -1,13 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { toast } from "sonner";
 import { AppShell } from "@/shared/layouts/AppShell";
 import { OrderHistoryList } from "@/features/cashier/components/OrderHistoryList";
 import { Button } from "@/shared/components/ui/button";
 import { useDebounce } from "@/shared/hooks/use-debounce";
 import { useRole } from "@/shared/hooks/use-role";
-import { getOrdersHistory } from "@/features/cashier/services/cashier.functions";
+import { getOrdersHistory, deleteOrder } from "@/features/cashier/services/cashier.functions";
 
 export const Route = createFileRoute("/_authenticated/cashier/history")({
   component: OrderHistoryPage,
@@ -21,9 +22,11 @@ const FILTERS: { key: StatusFilter; label: string }[] = [
 ];
 
 function OrderHistoryPage() {
+  const queryClient = useQueryClient();
   const role = useRole();
   const userRole = role.data?.role === "owner" ? "owner" : "cashier";
   const fetchHistory = useServerFn(getOrdersHistory);
+  const deleteOrderFn = useServerFn(deleteOrder);
 
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<StatusFilter>(undefined);
@@ -44,6 +47,16 @@ function OrderHistoryPage() {
   });
 
   const data = history.data;
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteOrderFn({ data: { orderId: id } });
+      toast.success("Pesanan berhasil dihapus");
+      queryClient.invalidateQueries({ queryKey: ["orders-history"] });
+    } catch (e: any) {
+      toast.error(e.message || "Gagal menghapus pesanan");
+    }
+  };
 
   return (
     <AppShell role={userRole} eyebrow="Riwayat" title="Riwayat Pesanan">
@@ -77,6 +90,7 @@ function OrderHistoryPage() {
             setPage(1);
           }}
           onPageChange={setPage}
+          onDelete={handleDelete}
         />
       </div>
     </AppShell>

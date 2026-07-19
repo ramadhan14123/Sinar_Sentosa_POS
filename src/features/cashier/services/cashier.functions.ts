@@ -112,3 +112,19 @@ export const getOrderById = createServerFn({ method: "GET" })
     if (error || !order) throw new Error("Pesanan tidak ditemukan.");
     return order as Record<string, any>;
   });
+
+export const deleteOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ orderId: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error, data: deletedRow } = await (supabaseAdmin as any)
+      .from("orders")
+      .delete()
+      .eq("id", data.orderId)
+      .select();
+    
+    if (error) throw new Error("Gagal menghapus pesanan: " + error.message);
+    if (!deletedRow || deletedRow.length === 0) throw new Error("Pesanan tidak ditemukan atau gagal dihapus.");
+    return { ok: true };
+  });

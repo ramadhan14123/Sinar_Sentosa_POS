@@ -1,4 +1,4 @@
-import { Clock3, Search, User2, ChevronDown } from "lucide-react";
+import { Clock3, Search, User2, ChevronDown, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
@@ -10,6 +10,17 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/shared/components/ui/pagination";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/shared/components/ui/alert-dialog";
 import { cn } from "@/shared/utils/cn";
 import { formatDateTime, formatIDR } from "@/shared/utils/format";
 
@@ -36,6 +47,7 @@ type OrderHistoryListProps = {
   search: string;
   onSearchChange: (v: string) => void;
   onPageChange: (page: number) => void;
+  onDelete?: (id: string) => void;
 };
 
 const STATUS_META: Record<string, { label: string; chip: string }> = {
@@ -58,6 +70,7 @@ export function OrderHistoryList({
   search,
   onSearchChange,
   onPageChange,
+  onDelete,
 }: OrderHistoryListProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -138,7 +151,40 @@ export function OrderHistoryList({
                 {isExpanded && (
                   <div className="px-4 pb-3 sm:px-5">
                     <div className="rounded-lg bg-muted/30 border p-3">
-                      <h4 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider">Detail Pesanan</h4>
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Detail Pesanan</h4>
+                        {onDelete && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={(e) => e.stopPropagation()}
+                                className="h-7 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                              >
+                                <Trash2 className="size-3 mr-1.5" /> Hapus
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Hapus Pesanan?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Apakah Anda yakin ingin menghapus pesanan <strong>{o.order_code}</strong>? Aksi ini akan menghapus data secara permanen dari database.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Batal</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => onDelete(o.id)} 
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Ya, Hapus
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
                       <ul className="space-y-1.5">
                         {o.order_items.map((item, idx) => (
                           <li key={idx} className="flex justify-between items-center text-sm">
