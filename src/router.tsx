@@ -15,8 +15,15 @@ export const getRouter = () => {
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">404</p>
           <h1 className="mt-2 font-display text-3xl font-extrabold">Halaman tidak ditemukan</h1>
-          <p className="mt-2 text-muted-foreground">Periksa kembali alamat atau kembali ke beranda.</p>
-          <Link to="/" className="mt-6 inline-flex rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-color">Kembali ke beranda</Link>
+          <p className="mt-2 text-muted-foreground">
+            Periksa kembali alamat atau kembali ke beranda.
+          </p>
+          <Link
+            to="/"
+            className="mt-6 inline-flex rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-color"
+          >
+            Kembali ke beranda
+          </Link>
         </div>
       </div>
     ),

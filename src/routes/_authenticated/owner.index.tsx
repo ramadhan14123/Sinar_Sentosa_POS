@@ -4,19 +4,39 @@ import { useServerFn } from "@tanstack/react-start";
 import { BadgeDollarSign, Package2, ReceiptText, ShoppingBasket, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { animate, motion, useMotionValue, useTransform } from "motion/react";
-import { Area, Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { AppShell } from "@/components/app-shell";
-import { Button } from "@/components/ui/button";
-import { PeriodDatePicker } from "@/components/ui/period-date-picker";
-import { useRole } from "@/hooks/use-role";
-import { formatIDR } from "@/lib/format";
-import { getAnalytics } from "@/lib/pos.functions";
+import {
+  Area,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { AppShell } from "@/shared/layouts/AppShell";
+import { Button } from "@/shared/components/ui/button";
+import { PeriodDatePicker } from "@/shared/components/ui/period-date-picker";
+import { useRole } from "@/shared/hooks/use-role";
+import { formatIDR } from "@/shared/utils/format";
+import { getAnalytics } from "@/features/dashboard/services/dashboard.functions";
 
 export const Route = createFileRoute("/_authenticated/owner/")({ component: OwnerPage });
 
 type Period = "day" | "month" | "year";
-const periodLabels: Record<Period, string> = { day: "Hari ini", month: "Bulan ini", year: "Tahun ini" };
-const chartTitles: Record<Period, string> = { day: "Pendapatan per jam", month: "Pendapatan harian bulan ini", year: "Pendapatan bulanan tahun ini" };
+const periodLabels: Record<Period, string> = {
+  day: "Hari ini",
+  month: "Bulan ini",
+  year: "Tahun ini",
+};
+const chartTitles: Record<Period, string> = {
+  day: "Pendapatan per jam",
+  month: "Pendapatan harian bulan ini",
+  year: "Pendapatan bulanan tahun ini",
+};
 type ChartPoint = { bucket: string; label: string; revenue: number; orders?: number };
 
 function OwnerPage() {
@@ -31,17 +51,23 @@ function OwnerPage() {
         data: {
           period,
           startDate: selectedDate.toISOString(),
-          endDate: period === "day"
-            ? new Date(selectedDate.getTime() + 86400000).toISOString()
-            : period === "month"
-              ? new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1).toISOString()
-              : new Date(selectedDate.getFullYear() + 1, 0, 1).toISOString(),
+          endDate:
+            period === "day"
+              ? new Date(selectedDate.getTime() + 86400000).toISOString()
+              : period === "month"
+                ? new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1).toISOString()
+                : new Date(selectedDate.getFullYear() + 1, 0, 1).toISOString(),
         },
       }),
     enabled: role.data?.role === "owner",
   });
   if (role.data && role.data.role !== "owner") return <Navigate to="/cashier" replace />;
-  const summary = analytics.data?.summary ?? { revenue: 0, orderCount: 0, avgOrder: 0, itemsSold: 0 };
+  const summary = analytics.data?.summary ?? {
+    revenue: 0,
+    orderCount: 0,
+    avgOrder: 0,
+    itemsSold: 0,
+  };
   const series = analytics.data?.series ?? [];
   const topProducts = analytics.data?.topProducts ?? [];
 
@@ -49,7 +75,16 @@ function OwnerPage() {
     <AppShell role="owner" eyebrow="Dashboard Owner" title="Ringkasan Bisnis">
       <div className="mb-5 flex flex-wrap items-center gap-2">
         {(Object.keys(periodLabels) as Period[]).map((p) => (
-          <Button key={p} variant={period === p ? "default" : "outline"} size="sm" className="rounded-full" onClick={() => { setPeriod(p); setSelectedDate(new Date()); }}>
+          <Button
+            key={p}
+            variant={period === p ? "default" : "outline"}
+            size="sm"
+            className="rounded-full"
+            onClick={() => {
+              setPeriod(p);
+              setSelectedDate(new Date());
+            }}
+          >
             {periodLabels[p]}
           </Button>
         ))}
@@ -65,10 +100,38 @@ function OwnerPage() {
           </>
         ) : (
           <>
-            <Kpi icon={BadgeDollarSign} label={`Pendapatan ${periodLabels[period].toLowerCase()}`} value={formatIDR(summary.revenue)} raw={summary.revenue} format="currency" tone="primary" />
-            <Kpi icon={ReceiptText} label="Transaksi selesai" value={String(summary.orderCount)} raw={summary.orderCount} format="integer" tone="primary" />
-            <Kpi icon={ShoppingBasket} label="Rata-rata order" value={formatIDR(summary.avgOrder)} raw={summary.avgOrder} format="currency" tone="primary" />
-            <Kpi icon={Package2} label="Item terjual" value={String(summary.itemsSold)} raw={summary.itemsSold} format="integer" tone="primary" />
+            <Kpi
+              icon={BadgeDollarSign}
+              label={`Pendapatan ${periodLabels[period].toLowerCase()}`}
+              value={formatIDR(summary.revenue)}
+              raw={summary.revenue}
+              format="currency"
+              tone="primary"
+            />
+            <Kpi
+              icon={ReceiptText}
+              label="Transaksi selesai"
+              value={String(summary.orderCount)}
+              raw={summary.orderCount}
+              format="integer"
+              tone="primary"
+            />
+            <Kpi
+              icon={ShoppingBasket}
+              label="Rata-rata order"
+              value={formatIDR(summary.avgOrder)}
+              raw={summary.avgOrder}
+              format="currency"
+              tone="primary"
+            />
+            <Kpi
+              icon={Package2}
+              label="Item terjual"
+              value={String(summary.itemsSold)}
+              raw={summary.itemsSold}
+              format="integer"
+              tone="primary"
+            />
           </>
         )}
       </div>
@@ -86,7 +149,9 @@ function OwnerPage() {
           ) : series.length && summary.revenue > 0 ? (
             <LineTrendChart data={series} period={period} />
           ) : (
-            <div className="grid h-full place-items-center text-sm text-muted-foreground">Belum ada transaksi pada periode ini.</div>
+            <div className="grid h-full place-items-center text-sm text-muted-foreground">
+              Belum ada transaksi pada periode ini.
+            </div>
           )}
         </div>
       </section>
@@ -100,7 +165,9 @@ function OwnerPage() {
         {topProducts.length ? (
           <TopProductsChart data={topProducts} />
         ) : (
-          <p className="py-8 text-center text-sm text-muted-foreground">Belum ada produk terjual di periode ini.</p>
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            Belum ada produk terjual di periode ini.
+          </p>
         )}
       </section>
     </AppShell>
@@ -134,14 +201,21 @@ function LineTrendChart({ data, period }: { data: ChartPoint[]; period: Period }
           width={35}
           dx={-5}
         />
-        <Tooltip content={<ChartTooltip />} cursor={{ stroke: "var(--border)", strokeDasharray: "4 6" }} />
+        <Tooltip
+          content={<ChartTooltip />}
+          cursor={{ stroke: "var(--border)", strokeDasharray: "4 6" }}
+        />
         <Area type="monotone" dataKey="revenue" stroke="none" fill="url(#revenueArea)" />
         <Line
           type="monotone"
           dataKey="revenue"
           stroke="var(--primary)"
           strokeWidth={4}
-          dot={isDay ? { r: 2, strokeWidth: 1.5, fill: "var(--background)", stroke: "var(--primary)" } : { r: 5, fill: "var(--background)", strokeWidth: 3, stroke: "var(--primary)" }}
+          dot={
+            isDay
+              ? { r: 2, strokeWidth: 1.5, fill: "var(--background)", stroke: "var(--primary)" }
+              : { r: 5, fill: "var(--background)", strokeWidth: 3, stroke: "var(--primary)" }
+          }
           activeDot={{ r: 7, fill: "var(--primary)", stroke: "var(--background)", strokeWidth: 3 }}
         />
       </LineChart>
@@ -164,15 +238,32 @@ function ChartTooltip({ active, payload, label }: any) {
 }
 
 function formatShortIDR(value: number) {
-  if (value >= 1_000_000) return `${Number((value / 1_000_000).toFixed(value % 1_000_000 === 0 ? 0 : 1))}jt`;
+  if (value >= 1_000_000)
+    return `${Number((value / 1_000_000).toFixed(value % 1_000_000 === 0 ? 0 : 1))}jt`;
   if (value >= 1_000) return `${Math.round(value / 1_000)}rb`;
   return String(value);
 }
 
-function Kpi({ icon: Icon, label, value, raw, format, tone }: { icon: any; label: string; value: string; raw?: number; format?: "currency" | "integer"; tone: "primary" | "info" | "success" }) {
+function Kpi({
+  icon: Icon,
+  label,
+  value,
+  raw,
+  format,
+  tone,
+}: {
+  icon: any;
+  label: string;
+  value: string;
+  raw?: number;
+  format?: "currency" | "integer";
+  tone: "primary" | "info" | "success";
+}) {
   return (
     <div className="rounded-2xl border bg-background p-3.5 sm:p-5">
-      <div className={`grid size-10 place-items-center rounded-xl ${tone === "primary" ? "bg-primary-soft text-primary" : tone === "info" ? "bg-info-soft text-info" : "bg-success-soft text-success"}`}>
+      <div
+        className={`grid size-10 place-items-center rounded-xl ${tone === "primary" ? "bg-primary-soft text-primary" : tone === "info" ? "bg-info-soft text-info" : "bg-success-soft text-success"}`}
+      >
         <Icon className="size-5" />
       </div>
       <p className="mt-4 text-sm text-muted-foreground">{label}</p>

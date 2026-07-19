@@ -8,10 +8,10 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import faviconurl from "../assets/sinarsentosa.svg?url"; 
+import faviconurl from "../assets/sinarsentosa.svg?url";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/shared/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -79,7 +79,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Sinar Sentosa — Pesan Menu dengan Mudah" },
-      { name: "description", content: "Sistem pemesanan, kasir, dan inventaris modern untuk restoran dan kafe." },
+      {
+        name: "description",
+        content: "Sistem pemesanan, kasir, dan inventaris modern untuk restoran dan kafe.",
+      },
       { name: "author", content: "Sinar Sentosa" },
       { property: "og:title", content: "Sinar Sentosa" },
       { property: "og:description", content: "Pesan menu dan pantau status pesanan dengan mudah." },
@@ -90,7 +93,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap",
+      },
       {
         rel: "stylesheet",
         href: appCss,

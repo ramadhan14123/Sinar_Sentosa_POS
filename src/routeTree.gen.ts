@@ -21,8 +21,12 @@ import { Route as AuthenticatedCashierRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedOwnerIndexRouteImport } from './routes/_authenticated/owner.index'
 import { Route as AuthenticatedCashierIndexRouteImport } from './routes/_authenticated/cashier.index'
 import { Route as AppSettingsPrinterRouteImport } from './routes/app/settings.printer'
+import { Route as AuthenticatedOwnerUnitsRouteImport } from './routes/_authenticated/owner.units'
+import { Route as AuthenticatedOwnerSuppliersRouteImport } from './routes/_authenticated/owner.suppliers'
 import { Route as AuthenticatedOwnerStaffRouteImport } from './routes/_authenticated/owner.staff'
+import { Route as AuthenticatedOwnerPurchasesRouteImport } from './routes/_authenticated/owner.purchases'
 import { Route as AuthenticatedOwnerProductsRouteImport } from './routes/_authenticated/owner.products'
+import { Route as AuthenticatedOwnerIngredientsRouteImport } from './routes/_authenticated/owner.ingredients'
 import { Route as AuthenticatedOwnerCategoriesRouteImport } from './routes/_authenticated/owner.categories'
 import { Route as AuthenticatedCashierPosRouteImport } from './routes/_authenticated/cashier.pos'
 import { Route as AuthenticatedCashierInventoryRouteImport } from './routes/_authenticated/cashier.inventory'
@@ -88,15 +92,38 @@ const AppSettingsPrinterRoute = AppSettingsPrinterRouteImport.update({
   path: '/settings/printer',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AuthenticatedOwnerUnitsRoute = AuthenticatedOwnerUnitsRouteImport.update({
+  id: '/units',
+  path: '/units',
+  getParentRoute: () => AuthenticatedOwnerRoute,
+} as any)
+const AuthenticatedOwnerSuppliersRoute =
+  AuthenticatedOwnerSuppliersRouteImport.update({
+    id: '/suppliers',
+    path: '/suppliers',
+    getParentRoute: () => AuthenticatedOwnerRoute,
+  } as any)
 const AuthenticatedOwnerStaffRoute = AuthenticatedOwnerStaffRouteImport.update({
   id: '/staff',
   path: '/staff',
   getParentRoute: () => AuthenticatedOwnerRoute,
 } as any)
+const AuthenticatedOwnerPurchasesRoute =
+  AuthenticatedOwnerPurchasesRouteImport.update({
+    id: '/purchases',
+    path: '/purchases',
+    getParentRoute: () => AuthenticatedOwnerRoute,
+  } as any)
 const AuthenticatedOwnerProductsRoute =
   AuthenticatedOwnerProductsRouteImport.update({
     id: '/products',
     path: '/products',
+    getParentRoute: () => AuthenticatedOwnerRoute,
+  } as any)
+const AuthenticatedOwnerIngredientsRoute =
+  AuthenticatedOwnerIngredientsRouteImport.update({
+    id: '/ingredients',
+    path: '/ingredients',
     getParentRoute: () => AuthenticatedOwnerRoute,
   } as any)
 const AuthenticatedOwnerCategoriesRoute =
@@ -136,8 +163,12 @@ export interface FileRoutesByFullPath {
   '/cashier/inventory': typeof AuthenticatedCashierInventoryRoute
   '/cashier/pos': typeof AuthenticatedCashierPosRoute
   '/owner/categories': typeof AuthenticatedOwnerCategoriesRoute
+  '/owner/ingredients': typeof AuthenticatedOwnerIngredientsRoute
   '/owner/products': typeof AuthenticatedOwnerProductsRoute
+  '/owner/purchases': typeof AuthenticatedOwnerPurchasesRoute
   '/owner/staff': typeof AuthenticatedOwnerStaffRoute
+  '/owner/suppliers': typeof AuthenticatedOwnerSuppliersRoute
+  '/owner/units': typeof AuthenticatedOwnerUnitsRoute
   '/app/settings/printer': typeof AppSettingsPrinterRoute
   '/cashier/': typeof AuthenticatedCashierIndexRoute
   '/owner/': typeof AuthenticatedOwnerIndexRoute
@@ -152,8 +183,12 @@ export interface FileRoutesByTo {
   '/cashier/inventory': typeof AuthenticatedCashierInventoryRoute
   '/cashier/pos': typeof AuthenticatedCashierPosRoute
   '/owner/categories': typeof AuthenticatedOwnerCategoriesRoute
+  '/owner/ingredients': typeof AuthenticatedOwnerIngredientsRoute
   '/owner/products': typeof AuthenticatedOwnerProductsRoute
+  '/owner/purchases': typeof AuthenticatedOwnerPurchasesRoute
   '/owner/staff': typeof AuthenticatedOwnerStaffRoute
+  '/owner/suppliers': typeof AuthenticatedOwnerSuppliersRoute
+  '/owner/units': typeof AuthenticatedOwnerUnitsRoute
   '/app/settings/printer': typeof AppSettingsPrinterRoute
   '/cashier': typeof AuthenticatedCashierIndexRoute
   '/owner': typeof AuthenticatedOwnerIndexRoute
@@ -173,8 +208,12 @@ export interface FileRoutesById {
   '/_authenticated/cashier/inventory': typeof AuthenticatedCashierInventoryRoute
   '/_authenticated/cashier/pos': typeof AuthenticatedCashierPosRoute
   '/_authenticated/owner/categories': typeof AuthenticatedOwnerCategoriesRoute
+  '/_authenticated/owner/ingredients': typeof AuthenticatedOwnerIngredientsRoute
   '/_authenticated/owner/products': typeof AuthenticatedOwnerProductsRoute
+  '/_authenticated/owner/purchases': typeof AuthenticatedOwnerPurchasesRoute
   '/_authenticated/owner/staff': typeof AuthenticatedOwnerStaffRoute
+  '/_authenticated/owner/suppliers': typeof AuthenticatedOwnerSuppliersRoute
+  '/_authenticated/owner/units': typeof AuthenticatedOwnerUnitsRoute
   '/app/settings/printer': typeof AppSettingsPrinterRoute
   '/_authenticated/cashier/': typeof AuthenticatedCashierIndexRoute
   '/_authenticated/owner/': typeof AuthenticatedOwnerIndexRoute
@@ -194,8 +233,12 @@ export interface FileRouteTypes {
     | '/cashier/inventory'
     | '/cashier/pos'
     | '/owner/categories'
+    | '/owner/ingredients'
     | '/owner/products'
+    | '/owner/purchases'
     | '/owner/staff'
+    | '/owner/suppliers'
+    | '/owner/units'
     | '/app/settings/printer'
     | '/cashier/'
     | '/owner/'
@@ -210,8 +253,12 @@ export interface FileRouteTypes {
     | '/cashier/inventory'
     | '/cashier/pos'
     | '/owner/categories'
+    | '/owner/ingredients'
     | '/owner/products'
+    | '/owner/purchases'
     | '/owner/staff'
+    | '/owner/suppliers'
+    | '/owner/units'
     | '/app/settings/printer'
     | '/cashier'
     | '/owner'
@@ -230,8 +277,12 @@ export interface FileRouteTypes {
     | '/_authenticated/cashier/inventory'
     | '/_authenticated/cashier/pos'
     | '/_authenticated/owner/categories'
+    | '/_authenticated/owner/ingredients'
     | '/_authenticated/owner/products'
+    | '/_authenticated/owner/purchases'
     | '/_authenticated/owner/staff'
+    | '/_authenticated/owner/suppliers'
+    | '/_authenticated/owner/units'
     | '/app/settings/printer'
     | '/_authenticated/cashier/'
     | '/_authenticated/owner/'
@@ -331,6 +382,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsPrinterRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_authenticated/owner/units': {
+      id: '/_authenticated/owner/units'
+      path: '/units'
+      fullPath: '/owner/units'
+      preLoaderRoute: typeof AuthenticatedOwnerUnitsRouteImport
+      parentRoute: typeof AuthenticatedOwnerRoute
+    }
+    '/_authenticated/owner/suppliers': {
+      id: '/_authenticated/owner/suppliers'
+      path: '/suppliers'
+      fullPath: '/owner/suppliers'
+      preLoaderRoute: typeof AuthenticatedOwnerSuppliersRouteImport
+      parentRoute: typeof AuthenticatedOwnerRoute
+    }
     '/_authenticated/owner/staff': {
       id: '/_authenticated/owner/staff'
       path: '/staff'
@@ -338,11 +403,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOwnerStaffRouteImport
       parentRoute: typeof AuthenticatedOwnerRoute
     }
+    '/_authenticated/owner/purchases': {
+      id: '/_authenticated/owner/purchases'
+      path: '/purchases'
+      fullPath: '/owner/purchases'
+      preLoaderRoute: typeof AuthenticatedOwnerPurchasesRouteImport
+      parentRoute: typeof AuthenticatedOwnerRoute
+    }
     '/_authenticated/owner/products': {
       id: '/_authenticated/owner/products'
       path: '/products'
       fullPath: '/owner/products'
       preLoaderRoute: typeof AuthenticatedOwnerProductsRouteImport
+      parentRoute: typeof AuthenticatedOwnerRoute
+    }
+    '/_authenticated/owner/ingredients': {
+      id: '/_authenticated/owner/ingredients'
+      path: '/ingredients'
+      fullPath: '/owner/ingredients'
+      preLoaderRoute: typeof AuthenticatedOwnerIngredientsRouteImport
       parentRoute: typeof AuthenticatedOwnerRoute
     }
     '/_authenticated/owner/categories': {
@@ -395,15 +474,23 @@ const AuthenticatedCashierRouteWithChildren =
 
 interface AuthenticatedOwnerRouteChildren {
   AuthenticatedOwnerCategoriesRoute: typeof AuthenticatedOwnerCategoriesRoute
+  AuthenticatedOwnerIngredientsRoute: typeof AuthenticatedOwnerIngredientsRoute
   AuthenticatedOwnerProductsRoute: typeof AuthenticatedOwnerProductsRoute
+  AuthenticatedOwnerPurchasesRoute: typeof AuthenticatedOwnerPurchasesRoute
   AuthenticatedOwnerStaffRoute: typeof AuthenticatedOwnerStaffRoute
+  AuthenticatedOwnerSuppliersRoute: typeof AuthenticatedOwnerSuppliersRoute
+  AuthenticatedOwnerUnitsRoute: typeof AuthenticatedOwnerUnitsRoute
   AuthenticatedOwnerIndexRoute: typeof AuthenticatedOwnerIndexRoute
 }
 
 const AuthenticatedOwnerRouteChildren: AuthenticatedOwnerRouteChildren = {
   AuthenticatedOwnerCategoriesRoute: AuthenticatedOwnerCategoriesRoute,
+  AuthenticatedOwnerIngredientsRoute: AuthenticatedOwnerIngredientsRoute,
   AuthenticatedOwnerProductsRoute: AuthenticatedOwnerProductsRoute,
+  AuthenticatedOwnerPurchasesRoute: AuthenticatedOwnerPurchasesRoute,
   AuthenticatedOwnerStaffRoute: AuthenticatedOwnerStaffRoute,
+  AuthenticatedOwnerSuppliersRoute: AuthenticatedOwnerSuppliersRoute,
+  AuthenticatedOwnerUnitsRoute: AuthenticatedOwnerUnitsRoute,
   AuthenticatedOwnerIndexRoute: AuthenticatedOwnerIndexRoute,
 }
 

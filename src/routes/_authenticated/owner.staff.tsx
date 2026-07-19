@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Mail, ShieldCheck, Trash2, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { AppShell } from "@/components/app-shell";
+import { AppShell } from "@/shared/layouts/AppShell";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -13,12 +13,16 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useRole } from "@/hooks/use-role";
-import { useActionGuard } from "@/hooks/use-action-guard";
-import { createCashier, deleteCashier, getStaffWithEmail } from "@/lib/pos.functions";
+} from "@/shared/components/ui/alert-dialog";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { useRole } from "@/shared/hooks/use-role";
+import { useActionGuard } from "@/shared/hooks/use-action-guard";
+import {
+  createCashier,
+  deleteCashier,
+  getStaffWithEmail,
+} from "@/features/staff/services/staff.functions";
 
 export const Route = createFileRoute("/_authenticated/owner/staff")({ component: StaffPage });
 
@@ -111,7 +115,9 @@ function StaffPage() {
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
               />
             </div>
-            <Button className="w-full" disabled={saving}>{saving ? "Menyimpan..." : "Buat akun Kasir"}</Button>
+            <Button className="w-full" disabled={saving}>
+              {saving ? "Menyimpan..." : "Buat akun Kasir"}
+            </Button>
           </div>
         </form>
 
@@ -121,7 +127,7 @@ function StaffPage() {
           </div>
           {query.data?.length ? (
             <div className="divide-y">
-              {query.data.map((p) => (
+              {query.data.map((p: any) => (
                 <div key={p.id} className="flex items-center gap-4 p-5">
                   <div className="grid size-11 place-items-center rounded-full bg-success-soft text-success">
                     <ShieldCheck />

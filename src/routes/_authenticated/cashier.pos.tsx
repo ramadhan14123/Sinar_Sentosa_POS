@@ -4,9 +4,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { Minus, Plus, Search, ShoppingBag, Utensils } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { AppShell } from "@/components/app-shell";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { AppShell } from "@/shared/layouts/AppShell";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -14,15 +14,15 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
-import { useRole } from "@/hooks/use-role";
+} from "@/shared/components/ui/sheet";
+import { useRole } from "@/shared/hooks/use-role";
 import { supabase } from "@/integrations/supabase/client";
-import { formatIDR } from "@/lib/format";
-import { confirmPayment, getOrderById } from "@/lib/pos.functions";
-import { getStoreSettings } from "@/lib/settings.functions";
-import { catalogQuery } from "@/lib/queries";
-import { printReceipt } from "@/lib/print";
-import type { StoreSettings } from "@/lib/print/types";
+import { formatIDR } from "@/shared/utils/format";
+import { getStoreSettings } from "@/features/settings/services/settings.functions";
+import { printReceipt } from "@/integrations/printer";
+import type { StoreSettings } from "@/integrations/printer/types";
+import { confirmPayment, getOrderById } from "@/features/cashier/services/cashier.functions";
+import { catalogQuery } from "@/features/products/queries/product.queries";
 
 export const Route = createFileRoute("/_authenticated/cashier/pos")({
   loader: ({ context }) => context.queryClient.ensureQueryData(catalogQuery),
@@ -130,7 +130,11 @@ function CashierPosPage() {
       ]);
       const cashierName = profileResult?.data?.full_name ?? "Kasir";
 
-      const printResult = await printReceipt(orderData as Record<string, any>, storeData as StoreSettings, cashierName);
+      const printResult = await printReceipt(
+        orderData as Record<string, any>,
+        storeData as StoreSettings,
+        cashierName,
+      );
       if (printResult === "thermal") {
         toast.success("Struk sedang dicetak.");
       } else if (printResult === "pdf") {

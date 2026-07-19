@@ -4,16 +4,26 @@ import { useServerFn } from "@tanstack/react-start";
 import { FolderPlus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { AppShell } from "@/components/app-shell";
-import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { AppShell } from "@/shared/layouts/AppShell";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/shared/components/ui/alert-dialog";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { useRole } from "@/hooks/use-role";
-import { useActionGuard } from "@/hooks/use-action-guard";
-import { deleteCategory, saveCategory } from "@/lib/pos.functions";
+import { useRole } from "@/shared/hooks/use-role";
+import { useActionGuard } from "@/shared/hooks/use-action-guard";
+import { deleteCategory, saveCategory } from "@/features/categories/services/category.functions";
 
-export const Route = createFileRoute("/_authenticated/owner/categories")({ component: CategoriesPage });
+export const Route = createFileRoute("/_authenticated/owner/categories")({
+  component: CategoriesPage,
+});
 
 function CategoriesPage() {
   const role = useRole();
@@ -84,7 +94,9 @@ function CategoriesPage() {
             placeholder="Contoh: Minuman"
             maxLength={60}
           />
-          <Button className="mt-3 w-full" disabled={saving}>{saving ? "Menyimpan..." : "Tambah kategori"}</Button>
+          <Button className="mt-3 w-full" disabled={saving}>
+            {saving ? "Menyimpan..." : "Tambah kategori"}
+          </Button>
         </form>
 
         <div className="overflow-hidden rounded-2xl border bg-background">
@@ -111,14 +123,19 @@ function CategoriesPage() {
         </div>
       </div>
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Hapus Kategori</AlertDialogTitle>
             <AlertDialogDescription>
               Apakah Anda yakin ingin menghapus kategori{" "}
-              <span className="font-semibold text-foreground">{deleteTarget?.name}</span>?
-              Kategori yang masih memiliki produk tidak dapat dihapus.
+              <span className="font-semibold text-foreground">{deleteTarget?.name}</span>? Kategori
+              yang masih memiliki produk tidak dapat dihapus.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

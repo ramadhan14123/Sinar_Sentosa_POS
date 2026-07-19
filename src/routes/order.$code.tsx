@@ -2,21 +2,74 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, Clock3, Download, ReceiptText, Utensils } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { formatDateTime, formatIDR } from "@/lib/format";
+import { formatDateTime, formatIDR } from "@/shared/utils/format";
 
-export const Route = createFileRoute("/order/$code")({ component: OrderPage, head: ({ params }) => ({ meta: [{ title: `Pesanan ${params.code} — Sinar Sentosa` }, { name: "description", content: "Pantau status pesanan dan unduh struk pembayaran." }] }) });
-type OrderData = { id: string; order_code: string; customer_name: string; status: string; total_idr: number; created_at: string; items: { name: string; price: number; quantity: number; subtotal: number }[] };
+export const Route = createFileRoute("/order/$code")({
+  component: OrderPage,
+  head: ({ params }) => ({
+    meta: [
+      { title: `Pesanan ${params.code} — Sinar Sentosa` },
+      { name: "description", content: "Pantau status pesanan dan unduh struk pembayaran." },
+    ],
+  }),
+});
+type OrderData = {
+  id: string;
+  order_code: string;
+  customer_name: string;
+  status: string;
+  total_idr: number;
+  created_at: string;
+  items: { name: string; price: number; quantity: number; subtotal: number }[];
+};
 const steps = ["pending_payment", "confirmed", "processing", "completed"];
 
 function OrderPage() {
-  const { code } = Route.useParams(); const [order, setOrder] = useState<OrderData | null>(null); const [error, setError] = useState("");
-  useEffect(() => { const token = localStorage.getItem(`order-token:${code}`); if (!token) { setError("Pesanan tidak ditemukan di perangkat ini."); return; } const load = async () => { const { data } = await supabase.rpc("get_order_by_code", { p_order_code: code, p_tracking_token: token }); if (data && typeof data === "object" && !Array.isArray(data)) setOrder(data as unknown as OrderData); else setError("Pesanan tidak ditemukan."); }; load(); const timer = window.setInterval(load, 5000); return () => window.clearInterval(timer); }, [code]);
-  if (error) return <div className="grid min-h-screen place-items-center p-6 text-center"><div><ReceiptText className="mx-auto size-10 text-muted-foreground"/><h1 className="mt-4 text-2xl font-bold">{error}</h1><Button asChild className="mt-6"><Link to="/">Kembali ke menu</Link></Button></div></div>;
-  if (!order) return <div className="grid min-h-screen place-items-center"><Clock3 className="size-10 animate-pulse text-primary" /></div>;
+  const { code } = Route.useParams();
+  const [order, setOrder] = useState<OrderData | null>(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const token = localStorage.getItem(`order-token:${code}`);
+    if (!token) {
+      setError("Pesanan tidak ditemukan di perangkat ini.");
+      return;
+    }
+    const load = async () => {
+      const { data } = await supabase.rpc("get_order_by_code", {
+        p_order_code: code,
+        p_tracking_token: token,
+      });
+      if (data && typeof data === "object" && !Array.isArray(data))
+        setOrder(data as unknown as OrderData);
+      else setError("Pesanan tidak ditemukan.");
+    };
+    load();
+    const timer = window.setInterval(load, 5000);
+    return () => window.clearInterval(timer);
+  }, [code]);
+  if (error)
+    return (
+      <div className="grid min-h-screen place-items-center p-6 text-center">
+        <div>
+          <ReceiptText className="mx-auto size-10 text-muted-foreground" />
+          <h1 className="mt-4 text-2xl font-bold">{error}</h1>
+          <Button asChild className="mt-6">
+            <Link to="/">Kembali ke menu</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  if (!order)
+    return (
+      <div className="grid min-h-screen place-items-center">
+        <Clock3 className="size-10 animate-pulse text-primary" />
+      </div>
+    );
   const currentOrder = order;
-  const current = Math.max(0, steps.indexOf(currentOrder.status)); const paid = ["confirmed", "processing", "completed"].includes(currentOrder.status);
+  const current = Math.max(0, steps.indexOf(currentOrder.status));
+  const paid = ["confirmed", "processing", "completed"].includes(currentOrder.status);
   async function downloadReceipt() {
     const pdf = await PDFDocument.create();
     const font = await pdf.embedFont(StandardFonts.Helvetica);
@@ -52,7 +105,9 @@ function OrderPage() {
       page.drawText(txt, { x: W - M - w, y, size, font: f, color });
     };
     const row = (l: string, r: string, size = 9, f = font, color = ink) => {
-      left(l, size, f, color); right(r, size, f, color); y -= size + 4;
+      left(l, size, f, color);
+      right(r, size, f, color);
+      y -= size + 4;
     };
     const hr = (dashed = false) => {
       y -= 2;
@@ -66,10 +121,15 @@ function OrderPage() {
       y -= 8;
     };
     const wrap = (txt: string, size: number, maxW: number) => {
-      const words = txt.split(" "); const lines: string[] = []; let cur = "";
+      const words = txt.split(" ");
+      const lines: string[] = [];
+      let cur = "";
       words.forEach((w) => {
         const test = cur ? `${cur} ${w}` : w;
-        if (font.widthOfTextAtSize(test, size) > maxW) { if (cur) lines.push(cur); cur = w; } else cur = test;
+        if (font.widthOfTextAtSize(test, size) > maxW) {
+          if (cur) lines.push(cur);
+          cur = w;
+        } else cur = test;
       });
       if (cur) lines.push(cur);
       return lines;
@@ -91,7 +151,10 @@ function OrderPage() {
     // Items
     currentOrder.items.forEach((i) => {
       const nameLines = wrap(i.name, 9, innerW);
-      nameLines.forEach((ln) => { left(ln, 9, bold); y -= 11; });
+      nameLines.forEach((ln) => {
+        left(ln, 9, bold);
+        y -= 11;
+      });
       const qtyLine = `${i.quantity} x ${formatIDR(i.price)}`;
       left(qtyLine, 8, font, muted);
       right(formatIDR(i.subtotal), 9);
@@ -114,8 +177,75 @@ function OrderPage() {
     const blob = new Blob([bytes as BlobPart], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `struk-${currentOrder.order_code}.pdf`; a.click();
+    a.href = url;
+    a.download = `struk-${currentOrder.order_code}.pdf`;
+    a.click();
     URL.revokeObjectURL(url);
   }
-  return <main className="min-h-screen bg-surface px-4 py-8"><div className="mx-auto max-w-2xl"><div className="mb-8 text-center"><div className="mx-auto grid size-14 place-items-center rounded-2xl bg-warning-soft text-warning"><Utensils /></div><p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-primary">{order.order_code}</p><h1 className="mt-2 text-3xl font-extrabold">{paid ? "Pembayaran dikonfirmasi" : "Bayar di kasir, ya"}</h1><p className="mt-2 text-muted-foreground">Pesanan atas nama <strong className="text-foreground">{order.customer_name}</strong></p></div><section className="rounded-3xl border bg-background p-6 shadow-sm sm:p-8"><div className="grid grid-cols-4">{steps.map((step, index) => <div key={step} className="text-center"><div className={`mx-auto grid size-9 place-items-center rounded-full ${index <= current ? "bg-success text-background" : "bg-muted text-muted-foreground"}`}>{index < current ? <Check className="size-4"/> : index + 1}</div><p className="mt-2 text-[10px] font-bold sm:text-xs">{["Menunggu", "Dikonfirmasi", "Diproses", "Selesai"][index]}</p></div>)}</div><div className="my-8 border-t"/><div className="space-y-4">{order.items.map((item) => <div key={item.name} className="flex justify-between gap-4"><div><p className="font-bold">{item.quantity}× {item.name}</p><p className="text-xs text-muted-foreground">{formatIDR(item.price)} / item</p></div><span className="font-semibold">{formatIDR(item.subtotal)}</span></div>)}</div><div className="mt-6 flex justify-between border-t pt-5 text-lg font-extrabold"><span>Total</span><span className="text-primary">{formatIDR(order.total_idr)}</span></div>{paid && <Button className="mt-6 h-12 w-full bg-info text-background hover:bg-info/90" onClick={downloadReceipt}><Download />Download Struk PDF</Button>}</section><p className="mt-6 text-center text-xs text-muted-foreground">Halaman diperbarui otomatis setiap beberapa detik.</p></div></main>;
+  return (
+    <main className="min-h-screen bg-surface px-4 py-8">
+      <div className="mx-auto max-w-2xl">
+        <div className="mb-8 text-center">
+          <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-warning-soft text-warning">
+            <Utensils />
+          </div>
+          <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-primary">
+            {order.order_code}
+          </p>
+          <h1 className="mt-2 text-3xl font-extrabold">
+            {paid ? "Pembayaran dikonfirmasi" : "Bayar di kasir, ya"}
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            Pesanan atas nama <strong className="text-foreground">{order.customer_name}</strong>
+          </p>
+        </div>
+        <section className="rounded-3xl border bg-background p-6 shadow-sm sm:p-8">
+          <div className="grid grid-cols-4">
+            {steps.map((step, index) => (
+              <div key={step} className="text-center">
+                <div
+                  className={`mx-auto grid size-9 place-items-center rounded-full ${index <= current ? "bg-success text-background" : "bg-muted text-muted-foreground"}`}
+                >
+                  {index < current ? <Check className="size-4" /> : index + 1}
+                </div>
+                <p className="mt-2 text-[10px] font-bold sm:text-xs">
+                  {["Menunggu", "Dikonfirmasi", "Diproses", "Selesai"][index]}
+                </p>
+              </div>
+            ))}
+          </div>
+          <div className="my-8 border-t" />
+          <div className="space-y-4">
+            {order.items.map((item) => (
+              <div key={item.name} className="flex justify-between gap-4">
+                <div>
+                  <p className="font-bold">
+                    {item.quantity}× {item.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{formatIDR(item.price)} / item</p>
+                </div>
+                <span className="font-semibold">{formatIDR(item.subtotal)}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 flex justify-between border-t pt-5 text-lg font-extrabold">
+            <span>Total</span>
+            <span className="text-primary">{formatIDR(order.total_idr)}</span>
+          </div>
+          {paid && (
+            <Button
+              className="mt-6 h-12 w-full bg-info text-background hover:bg-info/90"
+              onClick={downloadReceipt}
+            >
+              <Download />
+              Download Struk PDF
+            </Button>
+          )}
+        </section>
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          Halaman diperbarui otomatis setiap beberapa detik.
+        </p>
+      </div>
+    </main>
+  );
 }

@@ -1,12 +1,12 @@
-import type { CapacitorConfig } from '@capacitor/cli'
+import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: 'com.sinarsentosa.pos',
-  appName: 'SinarSentosaPOS',
+  appId: "com.sinarsentosa.pos",
+  appName: "SinarSentosaPOS",
   server: {
-    url: 'https://sinarsentosa.vercel.app/app',
+    url: "https://sinarsentosa.vercel.app/app",
     cleartext: false,
   },
-}
+};
 
-export default config
+export default config;

@@ -2,14 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { AppShell } from "@/components/app-shell";
-import { OrderHistoryList } from "@/components/order-history-list";
-import { Button } from "@/components/ui/button";
-import { useDebounce } from "@/hooks/use-debounce";
-import { useRole } from "@/hooks/use-role";
-import { getOrdersHistory } from "@/lib/pos.functions";
+import { AppShell } from "@/shared/layouts/AppShell";
+import { OrderHistoryList } from "@/features/cashier/components/OrderHistoryList";
+import { Button } from "@/shared/components/ui/button";
+import { useDebounce } from "@/shared/hooks/use-debounce";
+import { useRole } from "@/shared/hooks/use-role";
+import { getOrdersHistory } from "@/features/cashier/services/cashier.functions";
 
-export const Route = createFileRoute("/_authenticated/cashier/history")({ component: OrderHistoryPage });
+export const Route = createFileRoute("/_authenticated/cashier/history")({
+  component: OrderHistoryPage,
+});
 
 type StatusFilter = "completed" | "cancelled" | undefined;
 const FILTERS: { key: StatusFilter; label: string }[] = [

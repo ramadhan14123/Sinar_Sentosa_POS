@@ -15,15 +15,18 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { AppShell } from "@/components/app-shell";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { useRole } from "@/hooks/use-role";
-import { useActionGuard } from "@/hooks/use-action-guard";
-import { getStoreSettings, upsertStoreSettings } from "@/lib/settings.functions";
-import { loadPrinterConfig, savePrinterConfig } from "@/lib/print/printer-store";
+import { AppShell } from "@/shared/layouts/AppShell";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+import { Switch } from "@/shared/components/ui/switch";
+import { useRole } from "@/shared/hooks/use-role";
+import { useActionGuard } from "@/shared/hooks/use-action-guard";
+import {
+  getStoreSettings,
+  upsertStoreSettings,
+} from "@/features/settings/services/settings.functions";
+import { loadPrinterConfig, savePrinterConfig } from "@/integrations/printer/printer-store";
 import {
   scanBluetoothDevices,
   stopScan,
@@ -39,9 +42,13 @@ import {
   openBluetoothSettings,
   openAppSettings,
   openCashDrawer,
-} from "@/lib/print/thermal-printer";
-import type { ConnectionType, PrinterConfig, StoreSettings } from "@/lib/print/types";
-import type { BluetoothDevice, UsbDeviceInfo, WifiNetworkInfo } from "@/lib/print/capacitor-plugin";
+} from "@/integrations/printer/thermal-printer";
+import type { ConnectionType, PrinterConfig, StoreSettings } from "@/integrations/printer/types";
+import type {
+  BluetoothDevice,
+  UsbDeviceInfo,
+  WifiNetworkInfo,
+} from "@/integrations/printer/capacitor-plugin";
 
 export const Route = createFileRoute("/app/settings/printer")({ component: PrinterSettingsPage });
 
@@ -701,7 +708,11 @@ function PrinterSettingsPage() {
                 )}
                 Cetak Uji Coba
               </Button>
-              <Button onClick={handleTestCashDrawer} disabled={testingDrawer} className="h-11 rounded-xl">
+              <Button
+                onClick={handleTestCashDrawer}
+                disabled={testingDrawer}
+                className="h-11 rounded-xl"
+              >
                 {testingDrawer ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : (

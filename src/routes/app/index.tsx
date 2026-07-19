@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { getMyRole } from "@/lib/pos.functions";
+import { getMyRole } from "@/features/auth/services/auth.functions";
 
 export const Route = createFileRoute("/app/")({
   loader: async () => {
