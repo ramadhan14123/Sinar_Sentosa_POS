@@ -27,7 +27,6 @@ export const getStockMovements = createServerFn({ method: "GET" })
     const from = (data.page - 1) * data.pageSize;
     const to = from + data.pageSize - 1;
 
-    // @ts-ignore
     const {
       data: movements,
       count,

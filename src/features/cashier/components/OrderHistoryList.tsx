@@ -1,4 +1,5 @@
-import { Clock3, Search, User2 } from "lucide-react";
+import { Clock3, Search, User2, ChevronDown } from "lucide-react";
+import { useState } from "react";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -58,6 +59,8 @@ export function OrderHistoryList({
   onSearchChange,
   onPageChange,
 }: OrderHistoryListProps) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
   return (
     <div className="space-y-4">
       <div className="relative">
@@ -94,9 +97,13 @@ export function OrderHistoryList({
               chip: "bg-muted text-muted-foreground",
             };
             const itemCount = o.order_items.reduce((s, it) => s + it.quantity, 0);
+            const isExpanded = expandedId === o.id;
             return (
               <li key={o.id} className={cn(i > 0 && "border-t border-border/60")}>
-                <div className="flex items-center gap-4 px-4 py-3 sm:px-5">
+                <div 
+                  className="flex items-center gap-4 px-4 py-3 sm:px-5 cursor-pointer hover:bg-muted/30 transition-colors"
+                  onClick={() => setExpandedId(isExpanded ? null : o.id)}
+                >
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                       <span className="font-display text-base font-extrabold tracking-tight">
@@ -120,12 +127,31 @@ export function OrderHistoryList({
                       <span>{formatDateTime(o.created_at)}</span>
                     </div>
                   </div>
-                  <span className="shrink-0 text-right">
+                  <span className="shrink-0 text-right flex flex-col items-end gap-1">
                     <span className="block font-display text-base font-extrabold text-primary">
                       {formatIDR(o.total_idr)}
                     </span>
+                    <ChevronDown className={cn("size-4 text-muted-foreground transition-transform", isExpanded && "rotate-180")} />
                   </span>
                 </div>
+                
+                {isExpanded && (
+                  <div className="px-4 pb-3 sm:px-5">
+                    <div className="rounded-lg bg-muted/30 border p-3">
+                      <h4 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wider">Detail Pesanan</h4>
+                      <ul className="space-y-1.5">
+                        {o.order_items.map((item, idx) => (
+                          <li key={idx} className="flex justify-between items-center text-sm">
+                            <span className="font-medium">
+                              {item.quantity}x <span className="text-muted-foreground font-normal">{item.product_name_snapshot}</span>
+                            </span>
+                            <span className="font-semibold text-primary">{formatIDR(item.subtotal)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
               </li>
             );
           })}
