@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { format } from "date-fns";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -97,53 +98,59 @@ export const runRetentionCleanup = createServerFn({ method: "POST" })
     const deleteDays: number = (settings as any)?.receipt_delete_days ?? 30;
 
     const now = new Date();
-    const activeCutoff = new Date(now.getTime() - activeDays * 86400000).toISOString();
-    const deleteCutoff = new Date(now.getTime() - deleteDays * 86400000).toISOString();
+    const activeCutoff = new Date(now.getTime() - activeDays * 86400000);
+    const deleteCutoff = new Date(now.getTime() - deleteDays * 86400000);
+
+    const activeCutoffDate = format(activeCutoff, "yyyy-MM-dd");
+    const deleteCutoffDate = format(deleteCutoff, "yyyy-MM-dd");
 
     const errors: string[] = [];
     let movedToCold = 0;
     let deletedFiles = 0;
 
-    // 2. Move active → cold
-    const { data: toMove } = await (supabaseAdmin as any)
+    // 2. Fetch all active and cold receipts with joined expense data
+    const { data: allReceipts, error: fetchErr } = await (supabaseAdmin as any)
       .from("expense_receipts")
-      .select("id, storage_path")
-      .eq("storage_tier", "active")
-      .lt("created_at", activeCutoff);
+      .select(`
+        id,
+        storage_path,
+        storage_tier,
+        created_at,
+        expense_id,
+        expenses!inner (
+          receipt_date,
+          created_at
+        )
+      `)
+      .in("storage_tier", ["active", "cold"]);
 
-    if (toMove && toMove.length > 0) {
-      for (const receipt of toMove) {
-        try {
-          // In Supabase Storage there's no "move" – we copy then delete.
-          // Since we're using a single bucket, we just flag cold in DB.
-          // True cold storage migration would require a separate bucket.
-          await (supabaseAdmin as any)
-            .from("expense_receipts")
-            .update({ storage_tier: "cold", moved_to_cold_at: now.toISOString() })
-            .eq("id", receipt.id);
-          movedToCold++;
-        } catch (e: any) {
-          errors.push(`Gagal memindahkan ${receipt.storage_path}: ${e.message}`);
-        }
-      }
+    if (fetchErr) {
+      throw new Error("Gagal mengambil data struk untuk retensi: " + fetchErr.message);
     }
 
-    // 3. Delete files older than delete cutoff
-    const { data: toDelete } = await (supabaseAdmin as any)
-      .from("expense_receipts")
-      .select("id, storage_path, expense_id")
-      .in("storage_tier", ["active", "cold"])
-      .lt("created_at", deleteCutoff);
+    for (const receipt of (allReceipts || [])) {
+      const expReceiptDate = (receipt as any).expenses?.receipt_date; // e.g. "2026-06-01"
+      const expCreatedAt = (receipt as any).expenses?.created_at || receipt.created_at; // ISO string
 
-    if (toDelete && toDelete.length > 0) {
-      for (const receipt of toDelete) {
+      // Check against both receipt_date (Tanggal Struk) and created_at (Tanggal Input)
+      const isPastActive =
+        (expReceiptDate && expReceiptDate <= activeCutoffDate) ||
+        (expCreatedAt && new Date(expCreatedAt) <= activeCutoff);
+
+      const isPastDelete =
+        (expReceiptDate && expReceiptDate <= deleteCutoffDate) ||
+        (expCreatedAt && new Date(expCreatedAt) <= deleteCutoff);
+
+      if (isPastDelete) {
+        // DELETE FILE
         try {
-          // Delete from Supabase Storage
           const { error: storageErr } = await (supabaseAdmin as any).storage
             .from("expense-receipts")
             .remove([receipt.storage_path]);
 
-          if (storageErr) throw new Error(storageErr.message);
+          if (storageErr && !storageErr.message?.includes("Object not found")) {
+            console.warn("Storage removal warning:", storageErr.message);
+          }
 
           // Mark as deleted in DB (preserve metadata)
           await (supabaseAdmin as any)
@@ -156,13 +163,24 @@ export const runRetentionCleanup = createServerFn({ method: "POST" })
             expense_id: receipt.expense_id,
             actor_id: context.userId,
             action: "cleanup_deleted",
-            notes: "File struk dihapus oleh proses retensi",
+            notes: `File struk dihapus otomatis oleh retensi (Tanggal Struk: ${expReceiptDate || "N/A"})`,
             metadata: { storage_path: receipt.storage_path },
           });
 
           deletedFiles++;
         } catch (e: any) {
           errors.push(`Gagal menghapus ${receipt.storage_path}: ${e.message}`);
+        }
+      } else if (isPastActive && receipt.storage_tier === "active") {
+        // MOVE TO COLD
+        try {
+          await (supabaseAdmin as any)
+            .from("expense_receipts")
+            .update({ storage_tier: "cold", moved_to_cold_at: now.toISOString() })
+            .eq("id", receipt.id);
+          movedToCold++;
+        } catch (e: any) {
+          errors.push(`Gagal memindahkan ${receipt.storage_path}: ${e.message}`);
         }
       }
     }
