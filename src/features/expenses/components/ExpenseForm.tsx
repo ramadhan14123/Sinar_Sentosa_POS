@@ -3,6 +3,7 @@
  * Uses Canvas API for compression: no extra dependencies needed.
  */
 import { useState, useRef } from "react";
+import { format, subDays } from "date-fns";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Camera, ImagePlus, Loader2, Receipt, UploadCloud, X } from "lucide-react";
@@ -17,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { useExpenseCategoriesQuery } from "../queries/expense.queries";
+import { useExpenseCategoriesQuery, useRetentionSettingsQuery } from "../queries/expense.queries";
 import { submitExpense } from "../services/expense.functions";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -64,10 +65,19 @@ const EMPTY: FormState = {
   category_id: "",
   merchant: "",
   receipt_number: "",
-  receipt_date: new Date().toISOString().slice(0, 10),
+  receipt_date: format(new Date(), "yyyy-MM-dd"),
   amount: "",
   description: "",
 };
+
+function getOperationalDateStr(resetTime?: string): string {
+  const [hours, minutes] = (resetTime || "00:00").split(":").map(Number);
+  let opDate = new Date();
+  if (opDate.getHours() < hours || (opDate.getHours() === hours && opDate.getMinutes() < minutes)) {
+    opDate = subDays(opDate, 1);
+  }
+  return format(opDate, "yyyy-MM-dd");
+}
 
 type Props = {
   onSuccess?: () => void;
@@ -78,8 +88,13 @@ export function ExpenseForm({ onSuccess }: Props) {
   const submitFn = useServerFn(submitExpense);
   const catQuery = useExpenseCategoriesQuery();
   const { data: categories = [] } = useQuery(catQuery);
+  const retQuery = useRetentionSettingsQuery();
+  const { data: settings } = useQuery(retQuery);
 
-  const [form, setForm] = useState<FormState>(EMPTY);
+  const [form, setForm] = useState<FormState>(() => ({
+    ...EMPTY,
+    receipt_date: getOperationalDateStr(settings?.expense_limit_reset_time),
+  }));
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [compressing, setCompressing] = useState(false);
@@ -163,7 +178,10 @@ export function ExpenseForm({ onSuccess }: Props) {
 
       toast.success("Pengeluaran berhasil diajukan!");
       qc.invalidateQueries({ queryKey: ["expenses"] });
-      setForm(EMPTY);
+      setForm({
+        ...EMPTY,
+        receipt_date: getOperationalDateStr(settings?.expense_limit_reset_time),
+      });
       clearImage();
       onSuccess?.();
     } catch (e: any) {

@@ -35,7 +35,7 @@ export function ExpenseSummaryCards() {
 
   const { limit, approved, pending, rejected } = stats;
 
-  const limitPercentage = limit.amount > 0 ? (limit.used / limit.amount) * 100 : 0;
+  const limitPercentage = Math.min(100, limit.amount > 0 ? (limit.used / limit.amount) * 100 : 0);
   const isOverLimit = limit.used > limit.amount;
   
   const periodLabel = limit.period === "daily" ? "Harian" : limit.period === "monthly" ? "Bulanan" : "Tahunan";

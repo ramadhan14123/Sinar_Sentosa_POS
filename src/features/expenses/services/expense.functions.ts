@@ -1,7 +1,16 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { format, endOfMonth, endOfYear, startOfMonth, startOfYear } from "date-fns";
+import { format, endOfMonth, endOfYear, startOfMonth, startOfYear, subDays } from "date-fns";
+
+export function getOperationalDate(date: Date, resetTime: string): string {
+  const [hours, minutes] = (resetTime || "00:00").split(":").map(Number);
+  let opDate = new Date(date);
+  if (opDate.getHours() < hours || (opDate.getHours() === hours && opDate.getMinutes() < minutes)) {
+    opDate = subDays(opDate, 1);
+  }
+  return format(opDate, "yyyy-MM-dd");
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -144,11 +153,13 @@ export const submitExpense = createServerFn({ method: "POST" })
       if (settings.expense_limit_period === "daily") {
         query = query.eq("receipt_date", data.receipt_date);
       } else if (settings.expense_limit_period === "monthly") {
-        const monthPrefix = data.receipt_date.substring(0, 7); // YYYY-MM
-        query = query.gte("receipt_date", `${monthPrefix}-01`).lte("receipt_date", `${monthPrefix}-31`);
+        const monthStart = format(startOfMonth(new Date(data.receipt_date)), "yyyy-MM-dd");
+        const monthEnd = format(endOfMonth(new Date(data.receipt_date)), "yyyy-MM-dd");
+        query = query.gte("receipt_date", monthStart).lte("receipt_date", monthEnd);
       } else if (settings.expense_limit_period === "yearly") {
-        const yearPrefix = data.receipt_date.substring(0, 4); // YYYY
-        query = query.gte("receipt_date", `${yearPrefix}-01-01`).lte("receipt_date", `${yearPrefix}-12-31`);
+        const yearStart = format(startOfYear(new Date(data.receipt_date)), "yyyy-MM-dd");
+        const yearEnd = format(endOfYear(new Date(data.receipt_date)), "yyyy-MM-dd");
+        query = query.gte("receipt_date", yearStart).lte("receipt_date", yearEnd);
       }
 
       const { data: activeExpenses, error: activeErr } = await query;
@@ -406,7 +417,11 @@ export const getExpenseSummaryStats = createServerFn({ method: "GET" })
     const settings = settingsData as any;
 
     const now = new Date();
-    const targetDate = data.date || format(now, "yyyy-MM-dd");
+    
+    let targetDate = data.date;
+    if (!targetDate) {
+      targetDate = getOperationalDate(now, settings.expense_limit_reset_time || "00:00:00");
+    }
 
     // Tanggal untuk filter harus akurat (local time, bukan UTC)
     let query = (supabaseAdmin as any).from("expenses").select("status, amount, receipt_date");
@@ -458,4 +473,63 @@ export const getExpenseSummaryStats = createServerFn({ method: "GET" })
     stats.limit.remaining = Math.max(0, stats.limit.amount - stats.limit.used);
 
     return stats;
+  });
+
+// ─── Limit Analysis ────────────────────────────────────────────────────────────
+
+export const getExpenseLimitAnalysis = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z
+      .object({
+        period: z.enum(["daily", "monthly", "yearly"]),
+        limit_amount: z.number().positive(),
+      })
+      .parse(input)
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: expenses, error } = await (supabaseAdmin as any)
+      .from("expenses")
+      .select("receipt_date, amount, status")
+      .in("status", ["approved", "submitted"]);
+
+    if (error) throw new Error("Gagal memuat data analisis.");
+
+    // Grouping by date/month/year
+    const groups: Record<string, number> = {};
+
+    (expenses || []).forEach((exp: any) => {
+      let key = "";
+      if (data.period === "daily") {
+        key = exp.receipt_date; // yyyy-MM-dd
+      } else if (data.period === "monthly") {
+        key = exp.receipt_date.substring(0, 7); // yyyy-MM
+      } else if (data.period === "yearly") {
+        key = exp.receipt_date.substring(0, 4); // yyyy
+      }
+
+      if (!groups[key]) groups[key] = 0;
+      groups[key] += Number(exp.amount);
+    });
+
+    const analysisData = Object.keys(groups)
+      .sort((a, b) => b.localeCompare(a)) // sort descending (newest first)
+      .map((key) => {
+        const used = groups[key];
+        const remaining = Math.max(0, data.limit_amount - used);
+        const overLimit = Math.max(0, used - data.limit_amount);
+        const efficiencyPercent = data.limit_amount > 0 ? (remaining / data.limit_amount) * 100 : 0;
+
+        return {
+          period_key: key,
+          used,
+          remaining,
+          over_limit: overLimit,
+          efficiency_percent: Number(efficiencyPercent.toFixed(2)),
+          is_efficient: used <= data.limit_amount,
+        };
+      });
+
+    return analysisData;
   });

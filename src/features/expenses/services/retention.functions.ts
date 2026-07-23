@@ -13,6 +13,7 @@ export type RetentionSettings = {
   expense_limit_enabled: boolean;
   expense_limit_period: "daily" | "monthly" | "yearly";
   expense_limit_amount: number;
+  expense_limit_reset_time: string;
 };
 
 export type CleanupSummary = {
@@ -38,6 +39,7 @@ export const getRetentionSettings = createServerFn({ method: "GET" })
       expense_limit_enabled: (data as any)?.expense_limit_enabled ?? false,
       expense_limit_period: (data as any)?.expense_limit_period ?? "monthly",
       expense_limit_amount: Number((data as any)?.expense_limit_amount ?? 0),
+      expense_limit_reset_time: (data as any)?.expense_limit_reset_time ?? "00:00:00",
     } as RetentionSettings;
   });
 
@@ -52,6 +54,7 @@ const retentionSchema = z
     expense_limit_enabled: z.boolean().default(false),
     expense_limit_period: z.enum(["daily", "monthly", "yearly"]).default("monthly"),
     expense_limit_amount: z.number().min(0).default(0),
+    expense_limit_reset_time: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, "Format harus HH:mm").default("00:00"),
   })
   .refine((v) => v.receipt_cold_days > v.receipt_active_days, {
     message: "Cold Storage harus lebih besar dari Active Storage.",

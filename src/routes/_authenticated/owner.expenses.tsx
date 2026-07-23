@@ -2,13 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ReceiptText, Tag } from "lucide-react";
+import { ReceiptText, Tag, BarChart3 } from "lucide-react";
 import { AppShell } from "@/shared/layouts/AppShell";
 import { Button } from "@/shared/components/ui/button";
 import { useRole } from "@/shared/hooks/use-role";
 import { ExpenseList } from "@/features/expenses/components/ExpenseList";
 import { ExpenseCategoryList } from "@/features/expenses/components/ExpenseCategoryList";
 import { ExpenseSummaryCards } from "@/features/expenses/components/ExpenseSummaryCards";
+import { ExpenseLimitAnalysis } from "@/features/expenses/components/ExpenseLimitAnalysis";
 import { useExpensesQuery } from "@/features/expenses/queries/expense.queries";
 import { getExpenses } from "@/features/expenses/services/expense.functions";
 
@@ -16,10 +17,11 @@ export const Route = createFileRoute("/_authenticated/owner/expenses")({
   component: OwnerExpensesPage,
 });
 
-type TabKey = "list" | "categories";
+type TabKey = "list" | "categories" | "analysis";
 const TABS: { key: TabKey; label: string; icon: typeof ReceiptText }[] = [
   { key: "list", label: "Daftar Pengeluaran", icon: ReceiptText },
   { key: "categories", label: "Kategori", icon: Tag },
+  { key: "analysis", label: "Analisis Limit & Efisiensi", icon: BarChart3 },
 ];
 
 type StatusFilter = "submitted" | "approved" | "rejected" | undefined;
@@ -93,6 +95,16 @@ function OwnerExpensesPage() {
         )}
 
         {tab === "categories" && <ExpenseCategoryList />}
+
+        {tab === "analysis" && (
+          <div className="space-y-4">
+            <h2 className="font-bold text-lg">Analisis Limit Pengeluaran</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Riwayat penggunaan limit pengeluaran per periode beserta sisa penghematan atau indikasi over-limit.
+            </p>
+            <ExpenseLimitAnalysis />
+          </div>
+        )}
       </div>
     </AppShell>
   );

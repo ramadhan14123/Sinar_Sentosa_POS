@@ -53,6 +53,7 @@ function StorageSettingsPage() {
   const [expenseLimitEnabled, setExpenseLimitEnabled] = useState(false);
   const [expenseLimitPeriod, setExpenseLimitPeriod] = useState<"daily" | "monthly" | "yearly">("monthly");
   const [expenseLimitAmount, setExpenseLimitAmount] = useState<number | "">("");
+  const [expenseLimitResetTime, setExpenseLimitResetTime] = useState<string>("00:00");
   
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -68,6 +69,7 @@ function StorageSettingsPage() {
     setExpenseLimitEnabled(settings.expense_limit_enabled);
     setExpenseLimitPeriod(settings.expense_limit_period);
     setExpenseLimitAmount(settings.expense_limit_amount);
+    setExpenseLimitResetTime(settings.expense_limit_reset_time || "00:00");
     setLoaded(true);
   }
 
@@ -87,6 +89,9 @@ function StorageSettingsPage() {
     if (expenseLimitEnabled && (!expenseLimitAmount || Number(expenseLimitAmount) <= 0)) {
       return toast.error("Nominal Limit harus diisi dan lebih dari 0.");
     }
+    if (expenseLimitEnabled && !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(expenseLimitResetTime)) {
+      return toast.error("Waktu reset limit tidak valid (Gunakan format HH:mm)");
+    }
     
     setSaving(true);
     try {
@@ -99,6 +104,7 @@ function StorageSettingsPage() {
           expense_limit_enabled: expenseLimitEnabled,
           expense_limit_period: expenseLimitPeriod,
           expense_limit_amount: Number(expenseLimitAmount || 0),
+          expense_limit_reset_time: expenseLimitResetTime,
         },
       });
       toast.success("Pengaturan storage disimpan.");
@@ -158,7 +164,7 @@ function StorageSettingsPage() {
               </div>
 
               {expenseLimitEnabled && (
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-3">
                   <div>
                     <Label>Periode Limit</Label>
                     <select
@@ -184,6 +190,19 @@ function StorageSettingsPage() {
                       className="mt-1.5"
                       placeholder="Contoh: 1000000"
                     />
+                  </div>
+                  <div>
+                    <Label htmlFor="reset-time">
+                      Waktu Reset <span className="text-muted-foreground">(HH:mm)</span>
+                    </Label>
+                    <Input
+                      id="reset-time"
+                      type="time"
+                      value={expenseLimitResetTime}
+                      onChange={(e) => setExpenseLimitResetTime(e.target.value)}
+                      className="mt-1.5"
+                    />
+                    <p className="mt-1 text-[10px] text-muted-foreground leading-tight">Limit harian/bulanan akan dihitung mulai dari jam ini.</p>
                   </div>
                 </div>
               )}

@@ -4,6 +4,7 @@ import {
   getExpenses,
   getExpenseAuditLog,
   getExpenseSummaryStats,
+  getExpenseLimitAnalysis,
 } from "../services/expense.functions";
 import { getRetentionSettings } from "../services/retention.functions";
 
@@ -54,3 +55,13 @@ export function useExpenseSummaryStatsQuery(date?: string) {
     queryFn: () => fn({ data: { date } }),
   };
 }
+
+export function useExpenseLimitAnalysisQuery(period: "daily" | "monthly" | "yearly", limit_amount: number) {
+  const fn = useServerFn(getExpenseLimitAnalysis);
+  return {
+    queryKey: ["expense-limit-analysis", period, limit_amount] as const,
+    queryFn: () => fn({ data: { period, limit_amount } }),
+    enabled: limit_amount > 0,
+  };
+}
+
