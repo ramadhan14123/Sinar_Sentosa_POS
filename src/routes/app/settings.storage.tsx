@@ -127,20 +127,31 @@ function StorageSettingsPage() {
 
   return (
     <AppShell role={userRole} eyebrow="Pengaturan" title="Storage & Retensi">
-      <div className="mx-auto max-w-7xl space-y-8">
-        <div className="grid gap-8 lg:grid-cols-2">
-          <ExpenseLimitConfigCard
-            isLoading={isLoading}
-            expenseLimitEnabled={expenseLimitEnabled}
-            setExpenseLimitEnabled={setExpenseLimitEnabled}
-            expenseLimitPeriod={expenseLimitPeriod}
-            setExpenseLimitPeriod={setExpenseLimitPeriod}
-            expenseLimitAmount={expenseLimitAmount}
-            setExpenseLimitAmount={setExpenseLimitAmount}
-            expenseLimitResetTime={expenseLimitResetTime}
-            setExpenseLimitResetTime={setExpenseLimitResetTime}
-          />
+      <div className="mx-auto max-w-7xl space-y-6">
+        {/* 2-column grid: left = Limit + Cleanup, right = Retensi */}
+        <div className="grid gap-5 lg:grid-cols-2">
+          {/* LEFT COLUMN */}
+          <div className="space-y-5">
+            <ExpenseLimitConfigCard
+              isLoading={isLoading}
+              expenseLimitEnabled={expenseLimitEnabled}
+              setExpenseLimitEnabled={setExpenseLimitEnabled}
+              expenseLimitPeriod={expenseLimitPeriod}
+              setExpenseLimitPeriod={setExpenseLimitPeriod}
+              expenseLimitAmount={expenseLimitAmount}
+              setExpenseLimitAmount={setExpenseLimitAmount}
+              expenseLimitResetTime={expenseLimitResetTime}
+              setExpenseLimitResetTime={setExpenseLimitResetTime}
+            />
 
+            <ManualCleanupCard
+              running={running}
+              cleanupResult={cleanupResult}
+              onRunCleanup={handleCleanup}
+            />
+          </div>
+
+          {/* RIGHT COLUMN */}
           <RetentionPolicyConfigCard
             isLoading={isLoading}
             activeDays={activeDays}
@@ -154,17 +165,19 @@ function StorageSettingsPage() {
           />
         </div>
 
-        <ManualCleanupCard
-          running={running}
-          cleanupResult={cleanupResult}
-          onRunCleanup={handleCleanup}
-        />
-
-        {/* Global Save Button */}
-        <div className="flex justify-end pt-4">
-          <Button onClick={handleSave} disabled={saving || isLoading} className="h-11 w-full sm:w-auto sm:px-12 rounded-xl text-md">
-            {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4 mr-2" />}
-            {saving ? "Menyimpan..." : "Simpan Semua Pengaturan"}
+        {/* Save Button inside page */}
+        <div className="flex justify-end border-t pt-5">
+          <Button
+            onClick={handleSave}
+            disabled={saving || isLoading}
+            className="h-11 w-full gap-2 sm:w-auto sm:min-w-[200px] rounded-xl text-sm"
+          >
+            {saving ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Save className="size-4" />
+            )}
+            {saving ? "Menyimpan..." : "Simpan Pengaturan"}
           </Button>
         </div>
       </div>

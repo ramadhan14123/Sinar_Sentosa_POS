@@ -39,7 +39,7 @@ export const getRetentionSettings = createServerFn({ method: "GET" })
       expense_limit_enabled: (data as any)?.expense_limit_enabled ?? false,
       expense_limit_period: (data as any)?.expense_limit_period ?? "monthly",
       expense_limit_amount: Number((data as any)?.expense_limit_amount ?? 0),
-      expense_limit_reset_time: (data as any)?.expense_limit_reset_time ?? "00:00:00",
+      expense_limit_reset_time: ((data as any)?.expense_limit_reset_time || "00:00").substring(0, 5),
     } as RetentionSettings;
   });
 

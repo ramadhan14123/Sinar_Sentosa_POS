@@ -26,76 +26,111 @@ export function ExpenseLimitConfigCard({
   expenseLimitResetTime,
   setExpenseLimitResetTime,
 }: Props) {
+  const selectClass =
+    "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 mt-1.5";
+
   return (
-    <section className="rounded-3xl border bg-background p-6 shadow-sm">
-      <h2 className="flex items-center gap-2 font-display text-xl font-extrabold">
-        <Wallet className="size-5" /> Pengaturan Limitasi Pengeluaran
-      </h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Batasi pengeluaran per periode. Nominal limit bisa diubah sewaktu-waktu.
-      </p>
+    <section className="rounded-2xl border bg-background shadow-sm overflow-hidden">
+      {/* Card Header */}
+      <div className="flex items-center gap-3 border-b px-5 py-4">
+        <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary">
+          <Wallet className="size-4" />
+        </div>
+        <div className="min-w-0">
+          <h2 className="font-display text-base font-bold leading-tight">
+            Limitasi Pengeluaran
+          </h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Batasi pengeluaran kasir per periode
+          </p>
+        </div>
+      </div>
 
-      {isLoading ? (
-        <div className="mt-6 h-32 animate-pulse rounded-xl bg-muted" />
-      ) : (
-        <div className="mt-6 space-y-5">
-          <div className="flex items-center justify-between rounded-xl border p-4">
-            <div>
-              <p className="text-sm font-bold">Aktifkan Limit Pengeluaran</p>
-              <p className="text-xs text-muted-foreground">
-                Jika aktif, pengajuan yang melewati limit akan ditolak.
-              </p>
-            </div>
-            <Switch checked={expenseLimitEnabled} onCheckedChange={setExpenseLimitEnabled} />
+      {/* Card Body */}
+      <div className="p-5">
+        {isLoading ? (
+          <div className="space-y-3">
+            <div className="h-14 animate-pulse rounded-xl bg-muted" />
+            <div className="h-24 animate-pulse rounded-xl bg-muted" />
           </div>
-
-          {expenseLimitEnabled && (
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div>
-                <Label>Periode Limit</Label>
-                <select
-                  className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 mt-1.5"
-                  value={expenseLimitPeriod}
-                  onChange={(e) => setExpenseLimitPeriod(e.target.value as any)}
-                >
-                  <option value="daily">Harian</option>
-                  <option value="monthly">Bulanan</option>
-                  <option value="yearly">Tahunan</option>
-                </select>
-              </div>
-              <div>
-                <Label htmlFor="limit-amount">
-                  Nominal Limit <span className="text-muted-foreground">(Rp)</span>
-                </Label>
-                <Input
-                  id="limit-amount"
-                  type="number"
-                  min="0"
-                  value={expenseLimitAmount}
-                  onChange={(e) => setExpenseLimitAmount(e.target.value ? Number(e.target.value) : "")}
-                  className="mt-1.5"
-                  placeholder="Contoh: 1000000"
-                />
-              </div>
-              <div>
-                <Label htmlFor="reset-time">
-                  Waktu Reset <span className="text-muted-foreground">(HH:mm)</span>
-                </Label>
-                <Input
-                  id="reset-time"
-                  type="time"
-                  value={expenseLimitResetTime}
-                  onChange={(e) => setExpenseLimitResetTime(e.target.value)}
-                  className="mt-1.5"
-                />
-                <p className="mt-1 text-[10px] text-muted-foreground leading-tight">
-                  Limit harian/bulanan akan dihitung mulai dari jam ini.
+        ) : (
+          <div className="space-y-4">
+            {/* Toggle Row */}
+            <div className="flex items-center justify-between gap-4 rounded-xl border bg-muted/30 px-4 py-3">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold">Aktifkan Limit</p>
+                <p className="text-xs text-muted-foreground">
+                  Pengajuan melebihi limit akan ditolak otomatis
                 </p>
               </div>
+              <Switch
+                checked={expenseLimitEnabled}
+                onCheckedChange={setExpenseLimitEnabled}
+              />
             </div>
-          )}
-        </div>
-      )}
+
+            {/* Detail Fields — shown only when enabled */}
+            {expenseLimitEnabled && (
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Periode Limit
+                  </Label>
+                  <select
+                    className={selectClass}
+                    value={expenseLimitPeriod}
+                    onChange={(e) => setExpenseLimitPeriod(e.target.value as any)}
+                  >
+                    <option value="daily">Harian</option>
+                    <option value="monthly">Bulanan</option>
+                    <option value="yearly">Tahunan</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label
+                      htmlFor="limit-amount"
+                      className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+                    >
+                      Nominal Limit (Rp)
+                    </Label>
+                    <Input
+                      id="limit-amount"
+                      type="number"
+                      min="0"
+                      value={expenseLimitAmount}
+                      onChange={(e) =>
+                        setExpenseLimitAmount(e.target.value ? Number(e.target.value) : "")
+                      }
+                      className="mt-1.5"
+                      placeholder="Contoh: 1000000"
+                    />
+                  </div>
+                  <div>
+                    <Label
+                      htmlFor="reset-time"
+                      className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+                    >
+                      Waktu Reset
+                    </Label>
+                    <Input
+                      id="reset-time"
+                      type="time"
+                      value={expenseLimitResetTime}
+                      onChange={(e) => setExpenseLimitResetTime(e.target.value)}
+                      className="mt-1.5"
+                    />
+                    <p className="mt-1 text-[10px] text-muted-foreground">
+                      Limit dihitung ulang dari jam ini
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </section>
   );
 }
