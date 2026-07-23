@@ -33,6 +33,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { getStaffOrders } from "@/features/cashier/services/cashier.functions";
 
+import { isMenuFinished } from "@/shared/config/menu-status.config";
+
 type NavChild = {
   to: string;
   label: string;
@@ -261,18 +263,27 @@ export function AppShell({
   function renderNavContent(isMobile = false) {
     return visibleGroups.map((group) => {
       const Icon = group.icon;
+      const isGroupFinished = isMenuFinished(group.label);
 
       // Standalone Item (e.g. Ringkasan)
       if (!group.children) {
         const isActive = pathname === group.to;
+        const isItemFinished = isGroupFinished && isMenuFinished(group.to!);
         const linkContent = (
           <Link
             to={group.to!}
-            className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-muted hover:text-foreground ${isActive ? "bg-primary-soft text-primary" : "text-muted-foreground"
+            className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-muted hover:text-foreground ${isActive ? "bg-primary-soft text-primary" : "text-muted-foreground"
               }`}
           >
-            <Icon className="size-4 shrink-0" />
-            {group.label}
+            <div className="flex items-center gap-3">
+              <Icon className="size-4 shrink-0" />
+              <span>{group.label}</span>
+            </div>
+            {!isItemFinished && (
+              <span className="rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                Beta
+              </span>
+            )}
           </Link>
         );
 
@@ -298,7 +309,12 @@ export function AppShell({
           >
             <div className="flex items-center gap-3">
               <Icon className="size-4 shrink-0" />
-              {group.label}
+              <span>{group.label}</span>
+              {!isGroupFinished && (
+                <span className="rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                  Beta
+                </span>
+              )}
             </div>
             {isOpen ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
           </button>
@@ -307,6 +323,7 @@ export function AppShell({
             <div className="flex flex-col gap-1 pl-9 pr-1">
               {group.children.map((child) => {
                 const isActive = pathname === child.to;
+                const isChildFinished = isMenuFinished(child.to);
                 const childContent = (
                   <Link
                     to={child.to}
@@ -314,11 +331,18 @@ export function AppShell({
                       }`}
                   >
                     <span>{child.label}</span>
-                    {child.to === "/cashier" && totalActive > 0 && (
-                      <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
-                        {totalActive > 99 ? "99+" : totalActive}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-1.5">
+                      {!isChildFinished && (
+                        <span className="rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                          Beta
+                        </span>
+                      )}
+                      {child.to === "/cashier" && totalActive > 0 && (
+                        <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
+                          {totalActive > 99 ? "99+" : totalActive}
+                        </span>
+                      )}
+                    </div>
                   </Link>
                 );
 

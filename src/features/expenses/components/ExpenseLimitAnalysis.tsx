@@ -60,7 +60,7 @@ export function ExpenseLimitAnalysis() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {analysis.map((item) => {
         const percentage = Math.min(100, limitAmount > 0 ? (item.used / limitAmount) * 100 : 0);
         

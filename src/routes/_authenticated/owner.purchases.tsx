@@ -1,41 +1,25 @@
-import {
-  ingredientsQuery,
-  ingredientCategoriesQuery,
-  stockMovementsQuery,
-} from "@/features/ingredients/queries/ingredient.queries";
-import { suppliersQuery } from "@/features/suppliers/queries/supplier.queries";
-import { purchaseOrdersQuery } from "@/features/purchases/queries/purchase.queries";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ShoppingCart, Plus, ArrowLeft, Trash2, CheckCircle2, XCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/shared/layouts/AppShell";
-import { PurchaseOrderList } from "@/features/purchases/components/PurchaseOrderList";
-import { PurchaseOrderForm } from "@/features/purchases/components/PurchaseOrderForm";
-import { PurchaseOrderDetail } from "@/features/purchases/components/PurchaseOrderDetail";
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { Textarea } from "@/shared/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/components/ui/dialog";
 import { useRole } from "@/shared/hooks/use-role";
 import { useActionGuard } from "@/shared/hooks/use-action-guard";
-import { formatIDR } from "@/shared/utils/format";
+
+import { ingredientsQuery } from "@/features/ingredients/queries/ingredient.queries";
+import { suppliersQuery } from "@/features/suppliers/queries/supplier.queries";
+import { purchaseOrdersQuery } from "@/features/purchases/queries/purchase.queries";
 import {
-  getPurchaseOrders,
   getPurchaseOrderById,
   savePurchaseOrder,
   completePurchaseOrder,
   cancelPurchaseOrder,
 } from "@/features/purchases/services/purchase.functions";
+
+import { PurchaseOrderList } from "@/features/purchases/components/PurchaseOrderList";
+import { PurchaseOrderForm } from "@/features/purchases/components/PurchaseOrderForm";
+import { PurchaseOrderDetail } from "@/features/purchases/components/PurchaseOrderDetail";
 
 export const Route = createFileRoute("/_authenticated/owner/purchases")({
   component: PurchasesPage,
@@ -110,7 +94,6 @@ function PurchasesPage() {
     setPurchaseDate(po.purchase_date.slice(0, 10));
     setNotes(po.notes || "");
 
-    // We need to fetch items first because list doesn't have it
     getPurchaseOrderById({ data: { orderId: po.id } }).then((data) => {
       setItems(
         data.items.map((i: any) => ({
@@ -121,20 +104,6 @@ function PurchasesPage() {
       );
       setView("form");
     });
-  }
-
-  function addItem() {
-    setItems([...items, { ingredient_id: "", quantity: "", unit_cost: "" }]);
-  }
-
-  function removeItem(index: number) {
-    setItems(items.filter((_, i) => i !== index));
-  }
-
-  function updateItem(index: number, field: string, value: string) {
-    const newItems = [...items];
-    newItems[index] = { ...newItems[index], [field]: value };
-    setItems(newItems);
   }
 
   async function handleSaveForm(e: React.FormEvent) {

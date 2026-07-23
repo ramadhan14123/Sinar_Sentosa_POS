@@ -13,7 +13,7 @@ export function ExpenseSummaryCards() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-1">
         {[...Array(4)].map((_, i) => (
           <Card key={i} className="animate-pulse rounded-2xl border-none shadow-md">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
@@ -41,7 +41,7 @@ export function ExpenseSummaryCards() {
   const periodLabel = limit.period === "daily" ? "Harian" : limit.period === "monthly" ? "Bulanan" : "Tahunan";
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-1">
       {/* 1. Limit Status */}
       {limit.enabled ? (
         <Card className={`rounded-2xl border bg-gradient-to-br from-background to-muted/20 shadow-sm transition-all hover:shadow-md ${isOverLimit ? "border-destructive shadow-destructive/10" : "border-indigo-100 dark:border-indigo-900/50"}`}>

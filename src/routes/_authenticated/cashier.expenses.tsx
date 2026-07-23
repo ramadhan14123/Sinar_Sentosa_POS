@@ -31,20 +31,24 @@ function CashierExpensesPage() {
 
   return (
     <AppShell role={userRole} eyebrow="Operasional" title="Pengeluaran Saya">
-      <div className="mx-auto max-w-3xl space-y-5">
-        <ExpenseSummaryCards />
-
-        <div className="flex justify-end">
-          <Button onClick={() => setFormOpen(true)} className="gap-2 rounded-full">
-            <PlusCircle className="size-4" /> Ajukan Pengeluaran
-          </Button>
+      <div className="mx-auto max-w-7xl space-y-5 lg:space-y-0 lg:grid lg:grid-cols-12 lg:gap-8">
+        <div className="lg:col-span-4 xl:col-span-3 space-y-5">
+          <ExpenseSummaryCards />
         </div>
 
-        <ExpenseList
-          expenses={data?.expenses ?? []}
-          isLoading={isLoading}
-          isOwner={false}
-        />
+        <div className="lg:col-span-8 xl:col-span-9 space-y-5 mt-6 lg:mt-0">
+          <div className="flex justify-end">
+            <Button onClick={() => setFormOpen(true)} className="gap-2 rounded-full">
+              <PlusCircle className="size-4" /> Ajukan Pengeluaran
+            </Button>
+          </div>
+
+          <ExpenseList
+            expenses={data?.expenses ?? []}
+            isLoading={isLoading}
+            isOwner={false}
+          />
+        </div>
       </div>
 
       <Dialog open={formOpen} onOpenChange={setFormOpen}>

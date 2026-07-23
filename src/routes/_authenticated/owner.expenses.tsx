@@ -47,10 +47,13 @@ function OwnerExpensesPage() {
 
   return (
     <AppShell role="owner" eyebrow="Keuangan" title="Manajemen Pengeluaran">
-      <div className="mx-auto max-w-3xl space-y-6">
-        <ExpenseSummaryCards />
+      <div className="mx-auto max-w-7xl space-y-6 lg:space-y-0 lg:grid lg:grid-cols-12 lg:gap-8">
+        <div className="lg:col-span-4 xl:col-span-3 space-y-6">
+          <ExpenseSummaryCards />
+        </div>
         
-        {/* Tab switcher */}
+        <div className="lg:col-span-8 xl:col-span-9 space-y-6 mt-6 lg:mt-0">
+          {/* Tab switcher */}
         <div className="flex gap-2">
           {TABS.map((t) => {
             const Icon = t.icon;
@@ -105,6 +108,7 @@ function OwnerExpensesPage() {
             <ExpenseLimitAnalysis />
           </div>
         )}
+        </div>
       </div>
     </AppShell>
   );
