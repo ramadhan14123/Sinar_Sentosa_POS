@@ -250,3 +250,54 @@ BEGIN
     WHERE id = p_purchase_order_id;
 END;
 $$;
+
+-- ============================================================================
+-- Row Level Security (RLS) Policies
+-- ============================================================================
+
+-- Enable RLS for all new tables
+ALTER TABLE public.units ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ingredient_categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ingredients ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.suppliers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.purchase_orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.purchase_order_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.product_recipes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.stock_movements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ingredient_batches ENABLE ROW LEVEL SECURITY;
+
+-- 1. Policies for units
+CREATE POLICY "Staff reads units" ON public.units FOR SELECT TO authenticated USING (public.is_staff(auth.uid()));
+CREATE POLICY "Owners manage units" ON public.units FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'owner')) WITH CHECK (public.has_role(auth.uid(), 'owner'));
+
+-- 2. Policies for ingredient_categories
+CREATE POLICY "Staff reads ingredient_categories" ON public.ingredient_categories FOR SELECT TO authenticated USING (public.is_staff(auth.uid()));
+CREATE POLICY "Owners manage ingredient_categories" ON public.ingredient_categories FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'owner')) WITH CHECK (public.has_role(auth.uid(), 'owner'));
+
+-- 3. Policies for ingredients
+CREATE POLICY "Staff reads ingredients" ON public.ingredients FOR SELECT TO authenticated USING (public.is_staff(auth.uid()));
+CREATE POLICY "Owners manage ingredients" ON public.ingredients FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'owner')) WITH CHECK (public.has_role(auth.uid(), 'owner'));
+
+-- 4. Policies for suppliers
+CREATE POLICY "Staff reads suppliers" ON public.suppliers FOR SELECT TO authenticated USING (public.is_staff(auth.uid()));
+CREATE POLICY "Owners manage suppliers" ON public.suppliers FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'owner')) WITH CHECK (public.has_role(auth.uid(), 'owner'));
+
+-- 5. Policies for purchase_orders
+CREATE POLICY "Staff reads purchase_orders" ON public.purchase_orders FOR SELECT TO authenticated USING (public.is_staff(auth.uid()));
+CREATE POLICY "Owners manage purchase_orders" ON public.purchase_orders FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'owner')) WITH CHECK (public.has_role(auth.uid(), 'owner'));
+
+-- 6. Policies for purchase_order_items
+CREATE POLICY "Staff reads purchase_order_items" ON public.purchase_order_items FOR SELECT TO authenticated USING (public.is_staff(auth.uid()));
+CREATE POLICY "Owners manage purchase_order_items" ON public.purchase_order_items FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'owner')) WITH CHECK (public.has_role(auth.uid(), 'owner'));
+
+-- 7. Policies for product_recipes
+CREATE POLICY "Staff reads product_recipes" ON public.product_recipes FOR SELECT TO authenticated USING (public.is_staff(auth.uid()));
+CREATE POLICY "Owners manage product_recipes" ON public.product_recipes FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'owner')) WITH CHECK (public.has_role(auth.uid(), 'owner'));
+
+-- 8. Policies for stock_movements
+CREATE POLICY "Staff reads stock_movements" ON public.stock_movements FOR SELECT TO authenticated USING (public.is_staff(auth.uid()));
+CREATE POLICY "Owners manage stock_movements" ON public.stock_movements FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'owner')) WITH CHECK (public.has_role(auth.uid(), 'owner'));
+
+-- 9. Policies for ingredient_batches
+CREATE POLICY "Staff reads ingredient_batches" ON public.ingredient_batches FOR SELECT TO authenticated USING (public.is_staff(auth.uid()));
+CREATE POLICY "Owners manage ingredient_batches" ON public.ingredient_batches FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'owner')) WITH CHECK (public.has_role(auth.uid(), 'owner'));

@@ -172,6 +172,9 @@ export type Database = {
           business_name: string;
           business_phone: string;
           created_at: string;
+          expense_limit_amount: number;
+          expense_limit_enabled: boolean;
+          expense_limit_period: string;
           footer_message: string;
           id: string;
           instagram: string;
@@ -189,6 +192,9 @@ export type Database = {
           business_name?: string;
           business_phone?: string;
           created_at?: string;
+          expense_limit_amount?: number;
+          expense_limit_enabled?: boolean;
+          expense_limit_period?: string;
           footer_message?: string;
           id?: string;
           instagram?: string;
@@ -206,6 +212,9 @@ export type Database = {
           business_name?: string;
           business_phone?: string;
           created_at?: string;
+          expense_limit_amount?: number;
+          expense_limit_enabled?: boolean;
+          expense_limit_period?: string;
           footer_message?: string;
           id?: string;
           instagram?: string;

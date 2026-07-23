@@ -163,6 +163,30 @@
     border-color: var(--color-border);
   }
 
+  /* Global Custom Scrollbar across all pages & scrollable containers */
+  html, body, * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--primary) 30%, transparent) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--primary) 25%, transparent);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklab, var(--primary) 55%, transparent);
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -175,4 +199,23 @@
 
 @utility shadow-color {
   box-shadow: 0 10px 24px color-mix(in oklab, var(--primary) 25%, transparent);
+}
+
+@utility custom-sidebar-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--primary) 30%, transparent) transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--primary) 25%, transparent);
+    border-radius: 9999px;
+  }
+  &:hover::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--primary) 50%, transparent);
+  }
 }

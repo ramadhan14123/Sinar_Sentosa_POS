@@ -35,4 +35,5 @@ dist-ssr
 .env
 .vercel
 android/
+.docs/
 docs/

@@ -20,6 +20,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCashierRouteImport } from './routes/_authenticated/cashier'
 import { Route as AuthenticatedOwnerIndexRouteImport } from './routes/_authenticated/owner.index'
 import { Route as AuthenticatedCashierIndexRouteImport } from './routes/_authenticated/cashier.index'
+import { Route as AppSettingsStorageRouteImport } from './routes/app/settings.storage'
 import { Route as AppSettingsPrinterRouteImport } from './routes/app/settings.printer'
 import { Route as AuthenticatedOwnerUnitsRouteImport } from './routes/_authenticated/owner.units'
 import { Route as AuthenticatedOwnerSuppliersRouteImport } from './routes/_authenticated/owner.suppliers'
@@ -27,10 +28,12 @@ import { Route as AuthenticatedOwnerStaffRouteImport } from './routes/_authentic
 import { Route as AuthenticatedOwnerPurchasesRouteImport } from './routes/_authenticated/owner.purchases'
 import { Route as AuthenticatedOwnerProductsRouteImport } from './routes/_authenticated/owner.products'
 import { Route as AuthenticatedOwnerIngredientsRouteImport } from './routes/_authenticated/owner.ingredients'
+import { Route as AuthenticatedOwnerExpensesRouteImport } from './routes/_authenticated/owner.expenses'
 import { Route as AuthenticatedOwnerCategoriesRouteImport } from './routes/_authenticated/owner.categories'
 import { Route as AuthenticatedCashierPosRouteImport } from './routes/_authenticated/cashier.pos'
 import { Route as AuthenticatedCashierInventoryRouteImport } from './routes/_authenticated/cashier.inventory'
 import { Route as AuthenticatedCashierHistoryRouteImport } from './routes/_authenticated/cashier.history'
+import { Route as AuthenticatedCashierExpensesRouteImport } from './routes/_authenticated/cashier.expenses'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -87,6 +90,11 @@ const AuthenticatedCashierIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedCashierRoute,
   } as any)
+const AppSettingsStorageRoute = AppSettingsStorageRouteImport.update({
+  id: '/settings/storage',
+  path: '/settings/storage',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppSettingsPrinterRoute = AppSettingsPrinterRouteImport.update({
   id: '/settings/printer',
   path: '/settings/printer',
@@ -126,6 +134,12 @@ const AuthenticatedOwnerIngredientsRoute =
     path: '/ingredients',
     getParentRoute: () => AuthenticatedOwnerRoute,
   } as any)
+const AuthenticatedOwnerExpensesRoute =
+  AuthenticatedOwnerExpensesRouteImport.update({
+    id: '/expenses',
+    path: '/expenses',
+    getParentRoute: () => AuthenticatedOwnerRoute,
+  } as any)
 const AuthenticatedOwnerCategoriesRoute =
   AuthenticatedOwnerCategoriesRouteImport.update({
     id: '/categories',
@@ -149,6 +163,12 @@ const AuthenticatedCashierHistoryRoute =
     path: '/history',
     getParentRoute: () => AuthenticatedCashierRoute,
   } as any)
+const AuthenticatedCashierExpensesRoute =
+  AuthenticatedCashierExpensesRouteImport.update({
+    id: '/expenses',
+    path: '/expenses',
+    getParentRoute: () => AuthenticatedCashierRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -159,10 +179,12 @@ export interface FileRoutesByFullPath {
   '/owner': typeof AuthenticatedOwnerRouteWithChildren
   '/order/$code': typeof OrderCodeRoute
   '/app/': typeof AppIndexRoute
+  '/cashier/expenses': typeof AuthenticatedCashierExpensesRoute
   '/cashier/history': typeof AuthenticatedCashierHistoryRoute
   '/cashier/inventory': typeof AuthenticatedCashierInventoryRoute
   '/cashier/pos': typeof AuthenticatedCashierPosRoute
   '/owner/categories': typeof AuthenticatedOwnerCategoriesRoute
+  '/owner/expenses': typeof AuthenticatedOwnerExpensesRoute
   '/owner/ingredients': typeof AuthenticatedOwnerIngredientsRoute
   '/owner/products': typeof AuthenticatedOwnerProductsRoute
   '/owner/purchases': typeof AuthenticatedOwnerPurchasesRoute
@@ -170,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/owner/suppliers': typeof AuthenticatedOwnerSuppliersRoute
   '/owner/units': typeof AuthenticatedOwnerUnitsRoute
   '/app/settings/printer': typeof AppSettingsPrinterRoute
+  '/app/settings/storage': typeof AppSettingsStorageRoute
   '/cashier/': typeof AuthenticatedCashierIndexRoute
   '/owner/': typeof AuthenticatedOwnerIndexRoute
 }
@@ -179,10 +202,12 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/order/$code': typeof OrderCodeRoute
   '/app': typeof AppIndexRoute
+  '/cashier/expenses': typeof AuthenticatedCashierExpensesRoute
   '/cashier/history': typeof AuthenticatedCashierHistoryRoute
   '/cashier/inventory': typeof AuthenticatedCashierInventoryRoute
   '/cashier/pos': typeof AuthenticatedCashierPosRoute
   '/owner/categories': typeof AuthenticatedOwnerCategoriesRoute
+  '/owner/expenses': typeof AuthenticatedOwnerExpensesRoute
   '/owner/ingredients': typeof AuthenticatedOwnerIngredientsRoute
   '/owner/products': typeof AuthenticatedOwnerProductsRoute
   '/owner/purchases': typeof AuthenticatedOwnerPurchasesRoute
@@ -190,6 +215,7 @@ export interface FileRoutesByTo {
   '/owner/suppliers': typeof AuthenticatedOwnerSuppliersRoute
   '/owner/units': typeof AuthenticatedOwnerUnitsRoute
   '/app/settings/printer': typeof AppSettingsPrinterRoute
+  '/app/settings/storage': typeof AppSettingsStorageRoute
   '/cashier': typeof AuthenticatedCashierIndexRoute
   '/owner': typeof AuthenticatedOwnerIndexRoute
 }
@@ -204,10 +230,12 @@ export interface FileRoutesById {
   '/_authenticated/owner': typeof AuthenticatedOwnerRouteWithChildren
   '/order/$code': typeof OrderCodeRoute
   '/app/': typeof AppIndexRoute
+  '/_authenticated/cashier/expenses': typeof AuthenticatedCashierExpensesRoute
   '/_authenticated/cashier/history': typeof AuthenticatedCashierHistoryRoute
   '/_authenticated/cashier/inventory': typeof AuthenticatedCashierInventoryRoute
   '/_authenticated/cashier/pos': typeof AuthenticatedCashierPosRoute
   '/_authenticated/owner/categories': typeof AuthenticatedOwnerCategoriesRoute
+  '/_authenticated/owner/expenses': typeof AuthenticatedOwnerExpensesRoute
   '/_authenticated/owner/ingredients': typeof AuthenticatedOwnerIngredientsRoute
   '/_authenticated/owner/products': typeof AuthenticatedOwnerProductsRoute
   '/_authenticated/owner/purchases': typeof AuthenticatedOwnerPurchasesRoute
@@ -215,6 +243,7 @@ export interface FileRoutesById {
   '/_authenticated/owner/suppliers': typeof AuthenticatedOwnerSuppliersRoute
   '/_authenticated/owner/units': typeof AuthenticatedOwnerUnitsRoute
   '/app/settings/printer': typeof AppSettingsPrinterRoute
+  '/app/settings/storage': typeof AppSettingsStorageRoute
   '/_authenticated/cashier/': typeof AuthenticatedCashierIndexRoute
   '/_authenticated/owner/': typeof AuthenticatedOwnerIndexRoute
 }
@@ -229,10 +258,12 @@ export interface FileRouteTypes {
     | '/owner'
     | '/order/$code'
     | '/app/'
+    | '/cashier/expenses'
     | '/cashier/history'
     | '/cashier/inventory'
     | '/cashier/pos'
     | '/owner/categories'
+    | '/owner/expenses'
     | '/owner/ingredients'
     | '/owner/products'
     | '/owner/purchases'
@@ -240,6 +271,7 @@ export interface FileRouteTypes {
     | '/owner/suppliers'
     | '/owner/units'
     | '/app/settings/printer'
+    | '/app/settings/storage'
     | '/cashier/'
     | '/owner/'
   fileRoutesByTo: FileRoutesByTo
@@ -249,10 +281,12 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/order/$code'
     | '/app'
+    | '/cashier/expenses'
     | '/cashier/history'
     | '/cashier/inventory'
     | '/cashier/pos'
     | '/owner/categories'
+    | '/owner/expenses'
     | '/owner/ingredients'
     | '/owner/products'
     | '/owner/purchases'
@@ -260,6 +294,7 @@ export interface FileRouteTypes {
     | '/owner/suppliers'
     | '/owner/units'
     | '/app/settings/printer'
+    | '/app/settings/storage'
     | '/cashier'
     | '/owner'
   id:
@@ -273,10 +308,12 @@ export interface FileRouteTypes {
     | '/_authenticated/owner'
     | '/order/$code'
     | '/app/'
+    | '/_authenticated/cashier/expenses'
     | '/_authenticated/cashier/history'
     | '/_authenticated/cashier/inventory'
     | '/_authenticated/cashier/pos'
     | '/_authenticated/owner/categories'
+    | '/_authenticated/owner/expenses'
     | '/_authenticated/owner/ingredients'
     | '/_authenticated/owner/products'
     | '/_authenticated/owner/purchases'
@@ -284,6 +321,7 @@ export interface FileRouteTypes {
     | '/_authenticated/owner/suppliers'
     | '/_authenticated/owner/units'
     | '/app/settings/printer'
+    | '/app/settings/storage'
     | '/_authenticated/cashier/'
     | '/_authenticated/owner/'
   fileRoutesById: FileRoutesById
@@ -375,6 +413,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCashierIndexRouteImport
       parentRoute: typeof AuthenticatedCashierRoute
     }
+    '/app/settings/storage': {
+      id: '/app/settings/storage'
+      path: '/settings/storage'
+      fullPath: '/app/settings/storage'
+      preLoaderRoute: typeof AppSettingsStorageRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/app/settings/printer': {
       id: '/app/settings/printer'
       path: '/settings/printer'
@@ -424,6 +469,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOwnerIngredientsRouteImport
       parentRoute: typeof AuthenticatedOwnerRoute
     }
+    '/_authenticated/owner/expenses': {
+      id: '/_authenticated/owner/expenses'
+      path: '/expenses'
+      fullPath: '/owner/expenses'
+      preLoaderRoute: typeof AuthenticatedOwnerExpensesRouteImport
+      parentRoute: typeof AuthenticatedOwnerRoute
+    }
     '/_authenticated/owner/categories': {
       id: '/_authenticated/owner/categories'
       path: '/categories'
@@ -452,10 +504,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCashierHistoryRouteImport
       parentRoute: typeof AuthenticatedCashierRoute
     }
+    '/_authenticated/cashier/expenses': {
+      id: '/_authenticated/cashier/expenses'
+      path: '/expenses'
+      fullPath: '/cashier/expenses'
+      preLoaderRoute: typeof AuthenticatedCashierExpensesRouteImport
+      parentRoute: typeof AuthenticatedCashierRoute
+    }
   }
 }
 
 interface AuthenticatedCashierRouteChildren {
+  AuthenticatedCashierExpensesRoute: typeof AuthenticatedCashierExpensesRoute
   AuthenticatedCashierHistoryRoute: typeof AuthenticatedCashierHistoryRoute
   AuthenticatedCashierInventoryRoute: typeof AuthenticatedCashierInventoryRoute
   AuthenticatedCashierPosRoute: typeof AuthenticatedCashierPosRoute
@@ -463,6 +523,7 @@ interface AuthenticatedCashierRouteChildren {
 }
 
 const AuthenticatedCashierRouteChildren: AuthenticatedCashierRouteChildren = {
+  AuthenticatedCashierExpensesRoute: AuthenticatedCashierExpensesRoute,
   AuthenticatedCashierHistoryRoute: AuthenticatedCashierHistoryRoute,
   AuthenticatedCashierInventoryRoute: AuthenticatedCashierInventoryRoute,
   AuthenticatedCashierPosRoute: AuthenticatedCashierPosRoute,
@@ -474,6 +535,7 @@ const AuthenticatedCashierRouteWithChildren =
 
 interface AuthenticatedOwnerRouteChildren {
   AuthenticatedOwnerCategoriesRoute: typeof AuthenticatedOwnerCategoriesRoute
+  AuthenticatedOwnerExpensesRoute: typeof AuthenticatedOwnerExpensesRoute
   AuthenticatedOwnerIngredientsRoute: typeof AuthenticatedOwnerIngredientsRoute
   AuthenticatedOwnerProductsRoute: typeof AuthenticatedOwnerProductsRoute
   AuthenticatedOwnerPurchasesRoute: typeof AuthenticatedOwnerPurchasesRoute
@@ -485,6 +547,7 @@ interface AuthenticatedOwnerRouteChildren {
 
 const AuthenticatedOwnerRouteChildren: AuthenticatedOwnerRouteChildren = {
   AuthenticatedOwnerCategoriesRoute: AuthenticatedOwnerCategoriesRoute,
+  AuthenticatedOwnerExpensesRoute: AuthenticatedOwnerExpensesRoute,
   AuthenticatedOwnerIngredientsRoute: AuthenticatedOwnerIngredientsRoute,
   AuthenticatedOwnerProductsRoute: AuthenticatedOwnerProductsRoute,
   AuthenticatedOwnerPurchasesRoute: AuthenticatedOwnerPurchasesRoute,
@@ -515,11 +578,13 @@ const AuthenticatedRouteRouteWithChildren =
 interface AppRouteRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppSettingsPrinterRoute: typeof AppSettingsPrinterRoute
+  AppSettingsStorageRoute: typeof AppSettingsStorageRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppSettingsPrinterRoute: AppSettingsPrinterRoute,
+  AppSettingsStorageRoute: AppSettingsStorageRoute,
 }
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
