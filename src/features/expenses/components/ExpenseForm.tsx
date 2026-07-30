@@ -178,6 +178,8 @@ export function ExpenseForm({ onSuccess }: Props) {
 
       toast.success("Pengeluaran berhasil diajukan!");
       qc.invalidateQueries({ queryKey: ["expenses"] });
+      qc.invalidateQueries({ queryKey: ["expense-limit-analysis"] });
+      qc.invalidateQueries({ queryKey: ["expense-summary-stats"] });
       setForm({
         ...EMPTY,
         receipt_date: getOperationalDateStr(settings?.expense_limit_reset_time),

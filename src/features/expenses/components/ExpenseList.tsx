@@ -80,6 +80,8 @@ export function ExpenseList({ expenses, isLoading, isOwner = false }: Props) {
       await approveFn({ data: { expenseId } });
       toast.success("Pengeluaran disetujui.");
       qc.invalidateQueries({ queryKey: ["expenses"] });
+      qc.invalidateQueries({ queryKey: ["expense-limit-analysis"] });
+      qc.invalidateQueries({ queryKey: ["expense-summary-stats"] });
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -94,6 +96,8 @@ export function ExpenseList({ expenses, isLoading, isOwner = false }: Props) {
       await rejectFn({ data: { expenseId: rejectDialog.expenseId, reason: rejectReason } });
       toast.success("Pengeluaran ditolak.");
       qc.invalidateQueries({ queryKey: ["expenses"] });
+      qc.invalidateQueries({ queryKey: ["expense-limit-analysis"] });
+      qc.invalidateQueries({ queryKey: ["expense-summary-stats"] });
       setRejectDialog({ open: false, expenseId: "", expenseCode: "" });
       setRejectReason("");
     } catch (e: any) {
