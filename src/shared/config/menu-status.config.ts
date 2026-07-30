@@ -13,7 +13,7 @@ export const MENU_STATUS_CONFIG: Record<string, boolean> = {
   "Penjualan": true,
   "Produk": true,
   "Persediaan": false,
-  "Keuangan": false,
+  "Keuangan": true,
   "Manajemen": true,
   "Pengaturan": true,
 
@@ -25,10 +25,11 @@ export const MENU_STATUS_CONFIG: Record<string, boolean> = {
   "/owner/categories": true,   // Kategori
 
   "/cashier/inventory": true, // Stok (Persediaan)
-  "/owner/ingredients": false, // Bahan Baku (Persediaan)
-  "/owner/units": false,       // Satuan (Persediaan)
-  "/owner/suppliers": false,   // Supplier (Persediaan)
-  "/owner/purchases": false,   // Pembelian PO (Persediaan)
+  "/owner/ingredients": false,           // Bahan Baku (Persediaan)
+  "/owner/ingredient-categories": false, // Kategori Bahan Baku (Persediaan)
+  "/owner/units": false,                 // Satuan (Persediaan)
+  "/owner/recipes": false,               // Resep Produk & HPP (Persediaan)
+  "/owner/purchases": false,             // Pembelian & Supplier (Persediaan)
 
   "/owner/expenses": true,     // Pengeluaran
   "/cashier/expenses": true,   // Pengeluaran Toko
